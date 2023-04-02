@@ -1,5 +1,6 @@
-use bevy::prelude::{Input, KeyCode, Res};
+use bevy::prelude::{Input, KeyCode, Res, Vec2};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum GameControl {
     Up,
     Down,
@@ -8,28 +9,33 @@ pub enum GameControl {
 }
 
 impl GameControl {
-    pub fn pressed(&self, keyboard_input: &Res<Input<KeyCode>>) -> bool {
+    pub fn check(
+        &self,
+        checker: &dyn Fn(&Res<Input<KeyCode>>, KeyCode) -> bool,
+        keyboard_input: &Res<Input<KeyCode>>,
+    ) -> bool {
         match self {
             GameControl::Up => {
-                keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up)
+                checker(keyboard_input, KeyCode::W) || checker(keyboard_input, KeyCode::Up)
             }
             GameControl::Down => {
-                keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down)
+                checker(keyboard_input, KeyCode::S) || checker(keyboard_input, KeyCode::Down)
             }
             GameControl::Left => {
-                keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left)
+                checker(keyboard_input, KeyCode::A) || checker(keyboard_input, KeyCode::Left)
             }
             GameControl::Right => {
-                keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right)
+                checker(keyboard_input, KeyCode::D) || checker(keyboard_input, KeyCode::Right)
             }
         }
     }
-}
 
-pub fn get_movement(control: GameControl, input: &Res<Input<KeyCode>>) -> f32 {
-    if control.pressed(input) {
-        1.0
-    } else {
-        0.0
+    pub fn movement(&self) -> Vec2 {
+        match self {
+            GameControl::Up => Vec2::new(0.0, 1.0),
+            GameControl::Down => Vec2::new(0.0, -1.0),
+            GameControl::Left => Vec2::new(-1.0, 0.0),
+            GameControl::Right => Vec2::new(1.0, 0.0),
+        }
     }
 }

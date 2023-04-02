@@ -35,7 +35,6 @@ fn setup_menu(
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-    commands.spawn(Camera2dBundle::default());
     commands
         .spawn(ButtonBundle {
             style: Style {
@@ -60,12 +59,14 @@ fn setup_menu(
         });
 }
 
+type InteractionWithColor<'a> = (&'a Interaction, &'a mut BackgroundColor);
+type ClickButtonFilter = (Changed<Interaction>, With<Button>);
 fn click_play_button(
     button_colors: Res<ButtonColors>,
     mut state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<Button>),
+        InteractionWithColor,
+        ClickButtonFilter,
     >,
 ) {
     for (interaction, mut color) in &mut interaction_query {

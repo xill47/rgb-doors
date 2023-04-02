@@ -5,7 +5,8 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
-use bevy_game::GamePlugin;
+use bevy_mod_aseprite::AsepritePlugin;
+use rgb_doors::GamePlugin;
 use std::io::Cursor;
 use winit::window::Icon;
 
@@ -13,15 +14,24 @@ fn main() {
     App::new()
         .insert_resource(Msaa::Off)
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Bevy game".to_string(), // ToDo
-                resolution: (800., 600.).into(),
-                canvas: Some("#bevy".to_owned()),
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "RGB Doors".to_string(),
+                        // resolution: (800., 600.).into(),
+                        canvas: Some("#bevy".to_owned()),
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(ImagePlugin::default_nearest())
+                .set(AssetPlugin {
+                    watch_for_changes: true,
+                    ..default()
+                }),
+        )
+        .add_plugin(AsepritePlugin)
         .add_plugin(GamePlugin)
         .add_system(set_window_icon.on_startup())
         .run();
