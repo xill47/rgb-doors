@@ -32,7 +32,7 @@ pub fn style_wasd_on_player_movement_action(
 ) {
     let wasd_actions = actions
         .iter()
-        .filter_map(|action| { action.player_movement.map(Wasd::from) })
+        .filter_map(|action| action.player_movement.map(Wasd::from))
         .collect::<HashSet<_>>();
     for (mut background_color, wasd, entity) in wasd_query.iter_mut() {
         if wasd_actions.contains(wasd) {

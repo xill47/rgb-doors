@@ -20,8 +20,10 @@ pub fn tween_background_color(
             background_color.0 = background_color_tween.end_color;
             commands.entity(entity).remove::<BackgroundColorTween>();
         } else {
-            let start_color_as_vec4 = Vec4::from_array(background_color_tween.start_color.as_rgba_f32());
-            let end_color_as_vec4 = Vec4::from_array(background_color_tween.end_color.as_rgba_f32());
+            let start_color_as_vec4 =
+                Vec4::from_array(background_color_tween.start_color.as_rgba_f32());
+            let end_color_as_vec4 =
+                Vec4::from_array(background_color_tween.end_color.as_rgba_f32());
             let color_as_vec4 = start_color_as_vec4.lerp(end_color_as_vec4, t);
             background_color.0 = color_as_vec4.into();
         }
