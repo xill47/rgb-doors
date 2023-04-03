@@ -16,6 +16,7 @@ impl Plugin for ActionsPlugin {
     }
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum PlayerMovement {
     Up,
     Down,
