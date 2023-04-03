@@ -1,4 +1,4 @@
-use bevy::prelude::{Input, KeyCode, Res, Vec2};
+use bevy::prelude::{Input, KeyCode, Res};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum GameControl {
@@ -27,15 +27,6 @@ impl GameControl {
             GameControl::Right => {
                 checker(keyboard_input, KeyCode::D) || checker(keyboard_input, KeyCode::Right)
             }
-        }
-    }
-
-    pub fn movement(&self) -> Vec2 {
-        match self {
-            GameControl::Up => Vec2::new(0.0, 1.0),
-            GameControl::Down => Vec2::new(0.0, -1.0),
-            GameControl::Left => Vec2::new(-1.0, 0.0),
-            GameControl::Right => Vec2::new(1.0, 0.0),
         }
     }
 }

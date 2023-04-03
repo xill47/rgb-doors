@@ -2,7 +2,7 @@ use crate::actions::Actions;
 use crate::levels::tiles::*;
 use crate::loading::SpriteAssets;
 use crate::GameState;
-use bevy::{ecs::entity, prelude::*, transform};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::{prelude::TilemapSize, tiles::TileStorage};
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation, AsepriteBundle};
