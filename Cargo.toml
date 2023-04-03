@@ -21,9 +21,13 @@ codegen-units = 1
 inherits = "release"
 lto = "thin"
 
+[features]
+dev = []
+
 [dependencies]
 bevy = { version = "0.10" }
 bevy_ecs_ldtk = { version = "0.6", features = ["default", "atlas"] }
+bevy_ecs_tilemap = { version = "0.10", features = ["default", "atlas"] }
 bevy_kira_audio = { version = "0.15" }
 bevy_asset_loader = { version = "0.15" }
 bevy_mod_aseprite = { version = "0.4" }

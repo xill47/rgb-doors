@@ -9,7 +9,7 @@ pub enum GameControl {
 }
 
 impl GameControl {
-    pub fn check(
+    pub fn check_input(
         &self,
         checker: &dyn Fn(&Res<Input<KeyCode>>, KeyCode) -> bool,
         keyboard_input: &Res<Input<KeyCode>>,
