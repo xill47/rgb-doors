@@ -64,10 +64,7 @@ type ClickButtonFilter = (Changed<Interaction>, With<Button>);
 fn click_play_button(
     button_colors: Res<ButtonColors>,
     mut state: ResMut<NextState<GameState>>,
-    mut interaction_query: Query<
-        InteractionWithColor,
-        ClickButtonFilter,
-    >,
+    mut interaction_query: Query<InteractionWithColor, ClickButtonFilter>,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
