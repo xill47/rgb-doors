@@ -4,7 +4,7 @@ pub mod tiles;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::LdtkIntCellAppExt, *};
 
-use crate::{loading::LevelAssets, GameState};
+use crate::{actions::Actions, loading::LevelAssets, GameState};
 
 use self::{
     camera_fit::camera_fit_inside_current_level,
@@ -30,6 +30,7 @@ impl Plugin for LevelsPlugin {
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 4)
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 5)
             .add_system(spawn_level.in_schedule(OnEnter(GameState::Playing)))
+            .add_system(respawn_on_level_reset.in_set(OnUpdate(GameState::Playing)))
             .add_system(camera_fit_inside_current_level);
     }
 }
@@ -39,4 +40,23 @@ fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
         ldtk_handle: level_assets.level.clone_weak(),
         ..default()
     });
+}
+
+fn respawn_on_level_reset(
+    mut commands: Commands,
+    mut actions: EventReader<Actions>,
+    level_assets: Res<LevelAssets>,
+    ldtk_wrold_q: Query<Entity, With<Handle<LdtkAsset>>>,
+) {
+    for action in actions.iter() {
+        if action.level_reset.is_some() {
+            for entity in ldtk_wrold_q.iter() {
+                commands.entity(entity).despawn_recursive();
+            }
+            commands.spawn(LdtkWorldBundle {
+                ldtk_handle: level_assets.level.clone_weak(),
+                ..default()
+            });
+        }
+    }
 }

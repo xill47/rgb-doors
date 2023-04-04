@@ -39,6 +39,7 @@ impl PlayerMovement {
 pub struct Actions {
     pub player_movement: Option<PlayerMovement>,
     pub color_switch: Option<()>,
+    pub level_reset: Option<()>,
 }
 
 pub fn set_movement_actions(
@@ -69,10 +70,15 @@ pub fn set_movement_actions(
         GameControl::ColorSwitch
             .check_input(&|input, code| input.just_pressed(code), &keyboard_input)
     };
-    if player_movement.is_some() || color_switch {
+    let level_reset = {
+        GameControl::LevelReset
+            .check_input(&|input, code| input.just_pressed(code), &keyboard_input)
+    };
+    if player_movement.is_some() || color_switch || level_reset {
         actions.send(Actions {
             player_movement,
             color_switch: if color_switch { Some(()) } else { None },
+            level_reset: if level_reset { Some(()) } else { None },
         });
     }
 }
