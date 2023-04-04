@@ -20,7 +20,7 @@ pub struct WallBundle {
     pub wall: Wall,
 }
 
-#[derive(Component)]
+#[derive(Component, PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Door {
     Red,
     Green,

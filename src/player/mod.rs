@@ -1,15 +1,15 @@
 pub mod ignore_doors;
 
-use crate::actions::Actions;
 use crate::levels::tiles::*;
 use crate::loading::SpriteAssets;
 use crate::GameState;
+use crate::{actions::Actions, grid_coords_from_instance};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::{prelude::TilemapSize, tiles::TileStorage};
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation, AsepriteBundle};
 
-use self::ignore_doors::{apply_ignore_door, IgnoreDoors, SetIgnoreDoor};
+use self::ignore_doors::*;
 
 pub struct PlayerPlugin;
 
@@ -18,9 +18,6 @@ pub struct Player;
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
-    #[worldly]
-    worldly: Worldly,
-
     #[from_entity_instance]
     entity_instance: EntityInstance,
 
@@ -30,11 +27,16 @@ pub struct PlayerBundle {
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_player_sprite.in_set(OnUpdate(GameState::Playing)))
-            .add_event::<SetIgnoreDoor>()
-            .register_ldtk_entity::<PlayerBundle>("Player")
+        app.register_ldtk_entity::<PlayerBundle>("Player")
             .add_systems(
-                (move_player_on_grid, apply_ignore_door).in_set(OnUpdate(GameState::Playing)),
+                (
+                    spawn_player_sprite,
+                    move_player_on_grid,
+                    ignore_doors_on_color_control_change,
+                    ignore_doors_on_panel_press,
+                    set_initial_color_control,
+                )
+                    .in_set(OnUpdate(GameState::Playing)),
             );
     }
 }
@@ -65,10 +67,7 @@ fn spawn_player_sprite(
                 transform: *transform,
                 ..default()
             })
-            .insert(GridCoords {
-                x: ldtk_instance.grid.x,
-                y: tilemap_size.y as i32 - ldtk_instance.grid.y - 1,
-            });
+            .insert(grid_coords_from_instance(ldtk_instance, tilemap_size));
     }
 }
 

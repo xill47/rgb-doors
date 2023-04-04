@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{actions::Actions, levels::tiles::Door, player::ignore_doors::SetIgnoreDoor};
+use crate::actions::Actions;
 
-#[derive(Component, Default, Debug)]
+#[derive(Component, Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ColorControl {
     Red,
     #[default]
@@ -40,28 +40,6 @@ pub fn set_color_control_from_action(
         if action.color_switch.is_some() {
             for mut color_control in color_control_q.iter_mut() {
                 color_control.switch();
-            }
-        }
-    }
-}
-
-pub fn send_set_ignore_door_on_color_control_change(
-    color_control_q: Query<&ColorControl, Changed<ColorControl>>,
-    mut set_ignore_door: EventWriter<SetIgnoreDoor>,
-) {
-    for color_control in color_control_q.iter() {
-        match color_control {
-            ColorControl::Red => {
-                set_ignore_door.send(SetIgnoreDoor {
-                    door: Door::Red,
-                    permanent: false,
-                });
-            }
-            ColorControl::Blue => {
-                set_ignore_door.send(SetIgnoreDoor {
-                    door: Door::Blue,
-                    permanent: false,
-                });
             }
         }
     }

@@ -1,45 +1,60 @@
 use bevy::prelude::*;
 
-use crate::levels::tiles::Door;
+use crate::{
+    levels::{door_panel::Panel, tiles::Door},
+    ui::color_control::ColorControl,
+};
 
 #[derive(Component, Default, Clone, Debug)]
 pub struct IgnoreDoors {
-    ignore_green: bool,
-    ignore_red: bool,
-    ignore_blue: bool,
-    ignore_green_permanent: bool,
-    ignore_red_permanent: bool,
-    ignore_blue_permanent: bool,
-}
-
-pub struct SetIgnoreDoor {
-    pub door: Door,
-    pub permanent: bool,
+    color_control: ColorControl,
+    pressed_panels: Vec<Panel>,
 }
 
 impl IgnoreDoors {
     pub fn ignores_door(&self, door: &Door) -> bool {
-        match door {
-            Door::Green => self.ignore_green || self.ignore_green_permanent,
-            Door::Red => self.ignore_red || self.ignore_red_permanent,
-            Door::Blue => self.ignore_blue || self.ignore_blue_permanent,
+        self.pressed_panels
+            .iter()
+            .flat_map(|panel| panel.opens_door)
+            .any(|panel_door| panel_door == *door)
+            || match door {
+                Door::Green => false,
+                Door::Red => self.color_control == ColorControl::Red,
+                Door::Blue => self.color_control == ColorControl::Blue,
+            }
+    }
+}
+
+pub fn set_initial_color_control(
+    mut ignore_doors: Query<&mut IgnoreDoors, Added<IgnoreDoors>>,
+    color_control_q: Query<&ColorControl>,
+) {
+    for color_control in color_control_q.iter() {
+        for mut ignore_doors in ignore_doors.iter_mut() {
+            ignore_doors.color_control = *color_control;
         }
     }
 }
 
-pub fn apply_ignore_door(
+pub fn ignore_doors_on_color_control_change(
     mut ignore_doors: Query<&mut IgnoreDoors>,
-    mut add_ignore_door: EventReader<SetIgnoreDoor>,
+    color_control_q: Query<&ColorControl, Changed<ColorControl>>,
 ) {
-    for add_ignore_door in add_ignore_door.iter() {
+    for color_control in color_control_q.iter() {
         for mut ignore_doors in ignore_doors.iter_mut() {
-            ignore_doors.ignore_green = false;
-            ignore_doors.ignore_red = false;
-            ignore_doors.ignore_blue = false;
-            match add_ignore_door.door {
-                Door::Green => ignore_doors.ignore_green = true,
-                Door::Red => ignore_doors.ignore_red = true,
-                Door::Blue => ignore_doors.ignore_blue = true,
+            ignore_doors.color_control = *color_control;
+        }
+    }
+}
+
+pub fn ignore_doors_on_panel_press(
+    mut ignore_doors: Query<&mut IgnoreDoors>,
+    panel_q: Query<&Panel, Changed<Panel>>,
+) {
+    for panel in panel_q.iter() {
+        for mut ignore_doors in ignore_doors.iter_mut() {
+            if panel.is_active() {
+                ignore_doors.pressed_panels.push(*panel);
             }
         }
     }

@@ -1,13 +1,15 @@
 mod camera_fit;
+pub mod door_panel;
 pub mod tiles;
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::LdtkIntCellAppExt, *};
+use bevy_ecs_ldtk::{prelude::{LdtkIntCellAppExt, LdtkEntityAppExt}, *};
 
 use crate::{actions::Actions, loading::LevelAssets, GameState};
 
 use self::{
     camera_fit::camera_fit_inside_current_level,
+    door_panel::{setup_panel, step_on_panel, PanelBundle},
     tiles::WallBundle,
     tiles::{DoorBundle, FloorBundle},
 };
@@ -29,8 +31,12 @@ impl Plugin for LevelsPlugin {
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 3)
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 4)
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 5)
-            .add_system(spawn_level.in_schedule(OnEnter(GameState::Playing)))
-            .add_system(respawn_on_level_reset.in_set(OnUpdate(GameState::Playing)))
+            .register_ldtk_entity::<PanelBundle>("Panel")
+            .add_systems((spawn_level,).in_schedule(OnEnter(GameState::Playing)))
+            .add_systems(
+                (setup_panel, respawn_on_level_reset, step_on_panel)
+                    .in_set(OnUpdate(GameState::Playing)),
+            )
             .add_system(camera_fit_inside_current_level);
     }
 }
