@@ -38,6 +38,7 @@ impl PlayerMovement {
 #[derive(Default)]
 pub struct Actions {
     pub player_movement: Option<PlayerMovement>,
+    pub color_switch: Option<()>,
 }
 
 pub fn set_movement_actions(
@@ -56,16 +57,22 @@ pub fn set_movement_actions(
             .find(|&direction| {
                 direction.check_input(&|input, code| input.just_pressed(code), &keyboard_input)
             })
-            .map(|direction| match direction {
-                GameControl::Up => PlayerMovement::Up,
-                GameControl::Down => PlayerMovement::Down,
-                GameControl::Left => PlayerMovement::Left,
-                GameControl::Right => PlayerMovement::Right,
+            .and_then(|direction| match direction {
+                GameControl::Up => Some(PlayerMovement::Up),
+                GameControl::Down => Some(PlayerMovement::Down),
+                GameControl::Left => Some(PlayerMovement::Left),
+                GameControl::Right => Some(PlayerMovement::Right),
+                _ => None,
             })
     };
-    if let Some(player_movement) = player_movement {
+    let color_switch = {
+        GameControl::ColorSwitch
+            .check_input(&|input, code| input.just_pressed(code), &keyboard_input)
+    };
+    if player_movement.is_some() || color_switch {
         actions.send(Actions {
-            player_movement: Some(player_movement),
+            player_movement,
+            color_switch: if color_switch { Some(()) } else { None },
         });
     }
 }

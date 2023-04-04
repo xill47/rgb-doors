@@ -17,8 +17,10 @@ impl Plugin for UIPlugin {
                 (
                     style_button_interactions,
                     style_wasd_on_player_movement_action,
+                    send_set_ignore_door_on_color_control_change,
                     tween_background_color.after(style_wasd_on_player_movement_action),
                     switch_red_or_blue_door_ignore_on_color_control_interaction,
+                    set_color_control_from_action,
                     change_button_text_on_color_control_change,
                 )
                     .in_set(OnUpdate(GameState::Playing)),

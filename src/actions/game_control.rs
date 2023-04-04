@@ -6,6 +6,7 @@ pub enum GameControl {
     Down,
     Left,
     Right,
+    ColorSwitch,
 }
 
 impl GameControl {
@@ -27,6 +28,7 @@ impl GameControl {
             GameControl::Right => {
                 checker(keyboard_input, KeyCode::D) || checker(keyboard_input, KeyCode::Right)
             }
+            GameControl::ColorSwitch => checker(keyboard_input, KeyCode::Space),
         }
     }
 }
