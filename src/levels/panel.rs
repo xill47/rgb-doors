@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, EntityInstance, GridCoords, LdtkEntity};
 use bevy_ecs_tilemap::prelude::TilemapSize;
 
-use crate::{grid_coords_from_instance, player::Player};
+use crate::{actions::PlayerMovement, grid_coords_from_instance, player::{Player, forbid_movement::ForbiddenMovement}};
 
 use super::tiles::Door;
 
@@ -14,9 +14,10 @@ pub struct PanelBundle {
     entity_instance: EntityInstance,
 }
 
-#[derive(Component, Clone, Default, Copy, Debug)]
+#[derive(Component, Clone, Default, Debug)]
 pub struct Panel {
     pub opens_door: Option<Door>,
+    forbids_movement: Vec<PlayerMovement>,
     active: bool,
 }
 
@@ -53,22 +54,53 @@ pub fn setup_panel(
             })
         {
             panel.opens_door = Some(door);
-            commands
-                .entity(entity)
-                .insert(grid_coords_from_instance(entity_instance, tilemap_size));
         }
+        if let Some(forbidden_movement) = entity_instance
+            .field_instances
+            .iter()
+            .find(|field| field.identifier == "Wasd_Disable")
+            .and_then(|movement| {
+                if let FieldValue::Enums(forbidden_movements) = movement.value.clone() {
+                    Some(forbidden_movements)
+                } else {
+                    None
+                }
+            })
+            .map(|forbidden_movements| {
+                forbidden_movements
+                    .iter()
+                    .flatten()
+                    .filter_map(|movement| match movement.as_str() {
+                        "W" => Some(PlayerMovement::Up),
+                        "S" => Some(PlayerMovement::Down),
+                        "A" => Some(PlayerMovement::Left),
+                        "D" => Some(PlayerMovement::Right),
+                        _ => None,
+                    })
+                    .collect::<Vec<PlayerMovement>>()
+            })
+        {
+            panel.forbids_movement = forbidden_movement;
+        }
+        commands
+            .entity(entity)
+            .insert(grid_coords_from_instance(entity_instance, tilemap_size));
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn step_on_panel(
-    player_q: Query<&GridCoords, (With<Player>, Changed<GridCoords>)>,
+    mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
     mut panel_q: Query<(&GridCoords, &mut Panel)>,
 ) {
     for (panel_coord, mut panel) in panel_q.iter_mut() {
-        for player_coords in player_q.iter() {
+        for (player_coords, mut forbidden_movement) in player_q.iter_mut() {
             if panel_coord == player_coords {
                 println!("Player stepped on panel: {:?}", panel_coord);
                 panel.active = true;
+                for movement in panel.forbids_movement.iter() {
+                    forbidden_movement.forbidden.insert(*movement);
+                }
             }
         }
     }

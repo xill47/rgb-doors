@@ -1,22 +1,21 @@
 use bevy::prelude::*;
 
 use crate::{
-    levels::{door_panel::Panel, tiles::Door},
+    levels::{panel::Panel, tiles::Door},
     ui::color_control::ColorControl,
 };
 
 #[derive(Component, Default, Clone, Debug)]
 pub struct IgnoreDoors {
     color_control: ColorControl,
-    pressed_panels: Vec<Panel>,
+    pressed_door_panels: Vec<Door>,
 }
 
 impl IgnoreDoors {
     pub fn ignores_door(&self, door: &Door) -> bool {
-        self.pressed_panels
+        self.pressed_door_panels
             .iter()
-            .flat_map(|panel| panel.opens_door)
-            .any(|panel_door| panel_door == *door)
+            .any(|panel_door| panel_door == door)
             || match door {
                 Door::Green => false,
                 Door::Red => self.color_control == ColorControl::Red,
@@ -54,7 +53,9 @@ pub fn ignore_doors_on_panel_press(
     for panel in panel_q.iter() {
         for mut ignore_doors in ignore_doors.iter_mut() {
             if panel.is_active() {
-                ignore_doors.pressed_panels.push(*panel);
+                if let Some(door) = panel.opens_door {
+                    ignore_doors.pressed_door_panels.push(door);
+                }
             }
         }
     }

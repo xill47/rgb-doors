@@ -1,3 +1,4 @@
+pub mod forbid_movement;
 pub mod ignore_doors;
 
 use crate::levels::tiles::*;
@@ -6,9 +7,11 @@ use crate::GameState;
 use crate::{actions::Actions, grid_coords_from_instance};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_ecs_tilemap::prelude::TilemapTileSize;
 use bevy_ecs_tilemap::{prelude::TilemapSize, tiles::TileStorage};
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation, AsepriteBundle};
 
+use self::forbid_movement::ForbiddenMovement;
 use self::ignore_doors::*;
 
 pub struct PlayerPlugin;
@@ -23,6 +26,7 @@ pub struct PlayerBundle {
 
     player: Player,
     ignore_doors: IgnoreDoors,
+    forbidden_movement: ForbiddenMovement,
 }
 
 impl Plugin for PlayerPlugin {
@@ -71,26 +75,43 @@ fn spawn_player_sprite(
     }
 }
 
-const TILE_SIZE: f32 = 16.0;
-
+#[allow(clippy::type_complexity)]
 fn move_player_on_grid(
     mut actions: EventReader<Actions>,
-    mut player_query: Query<(&mut GridCoords, &mut Transform, Option<&IgnoreDoors>), With<Player>>,
+    mut player_query: Query<
+        (
+            &mut GridCoords,
+            &mut Transform,
+            Option<&IgnoreDoors>,
+            Option<&ForbiddenMovement>,
+        ),
+        With<Player>,
+    >,
     tile_storage_q: Query<(&TileStorage, &Name)>,
+    tile_size_q: Query<&TilemapTileSize>,
     tiles_q: Query<(Option<&Wall>, Option<&Floor>, Option<&Door>)>,
 ) {
     let Some(int_grid_tiles) = tile_storage_q
         .iter()
         .find(|(_tile, name)| name.as_str() == "IntGrid")
         .map(|(tile, _name)| tile) else { return;};
+    let Some(tile_size) = tile_size_q.iter().next() else { return;};
     for actions in actions.iter() {
         if let Some(player_movement) = &actions.player_movement {
-            let player_movement = player_movement.movement();
+            let player_movement_vec = player_movement.movement();
 
-            for (mut grid_coords, mut transform, ignore_doors) in player_query.iter_mut() {
+            for (mut grid_coords, mut transform, ignore_doors, forbidden_movement) in
+                player_query.iter_mut()
+            {
+                if let Some(forbidden_movement) = forbidden_movement {
+                    if forbidden_movement.forbidden.contains(player_movement) {
+                        continue;
+                    }
+                }
+
                 let target_tile_pos = GridCoords {
-                    x: grid_coords.x + player_movement.x,
-                    y: grid_coords.y + player_movement.y,
+                    x: grid_coords.x + player_movement_vec.x,
+                    y: grid_coords.y + player_movement_vec.y,
                 };
                 let Some(tile_entity) = int_grid_tiles.get(&target_tile_pos.into()) else { continue };
                 let Ok((wall, floor, door)) = tiles_q.get(tile_entity) else { continue };
@@ -104,7 +125,8 @@ fn move_player_on_grid(
                                 &mut grid_coords,
                                 target_tile_pos,
                                 &mut transform,
-                                player_movement,
+                                player_movement_vec,
+                                tile_size,
                             );
                         }
                     }
@@ -113,7 +135,8 @@ fn move_player_on_grid(
                         &mut grid_coords,
                         target_tile_pos,
                         &mut transform,
-                        player_movement,
+                        player_movement_vec,
+                        tile_size,
                     );
                 }
             }
@@ -126,8 +149,9 @@ fn move_on_grid(
     target_tile_pos: GridCoords,
     transform: &mut Mut<Transform>,
     player_movement: IVec2,
+    tile_size: &TilemapTileSize,
 ) {
     **grid_coords = target_tile_pos;
-    transform.translation.x += player_movement.x as f32 * TILE_SIZE;
-    transform.translation.y += player_movement.y as f32 * TILE_SIZE;
+    transform.translation.x += player_movement.x as f32 * tile_size.x;
+    transform.translation.y += player_movement.y as f32 * tile_size.y;
 }

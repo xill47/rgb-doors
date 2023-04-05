@@ -1,5 +1,5 @@
 mod camera_fit;
-pub mod door_panel;
+pub mod panel;
 pub mod tiles;
 
 use bevy::prelude::*;
@@ -9,7 +9,7 @@ use crate::{actions::Actions, loading::LevelAssets, GameState};
 
 use self::{
     camera_fit::camera_fit_inside_current_level,
-    door_panel::{setup_panel, step_on_panel, PanelBundle},
+    panel::{setup_panel, step_on_panel, PanelBundle},
     tiles::WallBundle,
     tiles::{DoorBundle, FloorBundle},
 };
