@@ -1,8 +1,15 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, EntityInstance, GridCoords, LdtkEntity};
 use bevy_ecs_tilemap::prelude::TilemapSize;
 
-use crate::{actions::PlayerMovement, grid_coords_from_instance, player::{Player, forbid_movement::ForbiddenMovement}};
+use crate::{
+    actions::PlayerMovement,
+    grid_coords_from_instance,
+    player::{forbid_movement::ForbiddenMovement, Player},
+    ui::notifications::Notification,
+};
 
 use super::tiles::Door;
 
@@ -92,11 +99,15 @@ pub fn setup_panel(
 pub fn step_on_panel(
     mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
     mut panel_q: Query<(&GridCoords, &mut Panel)>,
+    mut notify: EventWriter<Notification>,
 ) {
     for (panel_coord, mut panel) in panel_q.iter_mut() {
         for (player_coords, mut forbidden_movement) in player_q.iter_mut() {
             if panel_coord == player_coords {
-                println!("Player stepped on panel: {:?}", panel_coord);
+                notify.send(Notification {
+                    text: "You stepped on a panel!",
+                    duration: Duration::from_secs(2),
+                });
                 panel.active = true;
                 for movement in panel.forbids_movement.iter() {
                     forbidden_movement.forbidden.insert(*movement);

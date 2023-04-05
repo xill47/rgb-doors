@@ -1,24 +1,28 @@
 pub mod bg_color_tween;
 pub mod color_control;
+pub mod notifications;
 pub mod wasd;
 
 use bevy::prelude::*;
 
 use crate::{loading::FontAssets, GameState};
 
-use self::{bg_color_tween::tween_background_color, color_control::*, wasd::*};
+use self::{bg_color_tween::*, color_control::*, notifications::*, wasd::*};
 
 pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(spawn_game_ui.in_schedule(OnEnter(GameState::Playing)))
+        app.add_event::<Notification>()
+            .add_system(spawn_game_ui.in_schedule(OnEnter(GameState::Playing)))
             .add_systems(
                 (
                     style_button_interactions,
                     style_wasd_on_player_movement_action,
                     tween_background_color.after(style_wasd_on_player_movement_action),
                     switch_red_or_blue_door_ignore_on_color_control_interaction,
+                    update_notifications,
+                    add_notification_from_event,
                     set_color_control_from_action,
                     change_button_text_on_color_control_change,
                 )
@@ -79,6 +83,7 @@ fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                 },
                             ));
                         });
+                    add_notifications_ui(parent, &text_style);
                     let wasd_size = 42.;
                     let wasd_margin = 8.;
                     let wasd_node_style = Style {
