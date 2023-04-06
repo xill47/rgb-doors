@@ -60,7 +60,7 @@ fn spawn_player_sprite(
     for (entity, transform, ldtk_instance) in player_q.iter() {
         let player_ase_handle = sprites.player.clone_weak();
         let player_ase = aseprites.get(&player_ase_handle).unwrap();
-        let player_anim = AsepriteAnimation::new(player_ase.info(), "idle");
+        let player_anim = AsepriteAnimation::new(player_ase.info(), "blue_idle");
         let mut transform = *transform;
         transform.translation.z += 1.;
         commands
