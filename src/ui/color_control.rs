@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::prelude::{ChildBuilder, *};
 
 use crate::actions::Actions;
 
@@ -20,6 +20,31 @@ impl ColorControl {
             }
         }
     }
+}
+
+pub fn add_color_control(parent: &mut ChildBuilder, text_style: &TextStyle) {
+    parent
+        .spawn(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(120.), Val::Px(50.)),
+                margin: UiRect::all(Val::Auto),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            background_color: Color::rgb(0.15, 0.15, 0.15).into(),
+            ..default()
+        })
+        .insert(ColorControl::default())
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "",
+                TextStyle {
+                    color: Color::rgb(0.1, 0.9, 0.1),
+                    ..text_style.clone()
+                },
+            ));
+        });
 }
 
 pub fn switch_red_or_blue_door_ignore_on_color_control_interaction(

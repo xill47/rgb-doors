@@ -1,5 +1,7 @@
 pub mod bg_color_tween;
+pub mod buttons_styles;
 pub mod color_control;
+pub mod debug;
 pub mod notifications;
 pub mod wasd;
 
@@ -7,7 +9,7 @@ use bevy::prelude::*;
 
 use crate::{loading::FontAssets, GameState};
 
-use self::{bg_color_tween::*, color_control::*, notifications::*, wasd::*};
+use self::{bg_color_tween::*, color_control::*, notifications::*, wasd::*, buttons_styles::style_button_interactions, debug::{add_debug_button, toggle_int_grid}};
 
 pub struct UIPlugin;
 
@@ -17,12 +19,13 @@ impl Plugin for UIPlugin {
             .add_system(spawn_game_ui.in_schedule(OnEnter(GameState::Playing)))
             .add_systems(
                 (
-                    style_button_interactions,
                     style_wasd_on_player_movement_action,
                     tween_background_color.after(style_wasd_on_player_movement_action),
+                    style_button_interactions,
                     switch_red_or_blue_door_ignore_on_color_control_interaction,
                     update_notifications,
                     add_notification_from_event,
+                    toggle_int_grid,
                     set_color_control_from_action,
                     change_button_text_on_color_control_change,
                 )
@@ -35,6 +38,7 @@ fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
     let text_style = TextStyle {
         font: font_assets.fira_sans.clone_weak(),
         color: Color::rgb(0.3, 0.3, 0.3),
+        font_size: 24.,
         ..default()
     };
     commands
@@ -62,26 +66,21 @@ fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                 })
                 .with_children(|parent| {
                     parent
-                        .spawn(ButtonBundle {
+                        .spawn(NodeBundle {
                             style: Style {
-                                size: Size::new(Val::Px(120.), Val::Px(50.)),
-                                margin: UiRect::all(Val::Auto),
+                                size: Size::new(Val::Px(120.), Val::Auto),
+                                flex_direction: FlexDirection::Column,
                                 justify_content: JustifyContent::Center,
-                                align_items: AlignItems::Center,
                                 ..default()
                             },
-                            background_color: Color::rgb(0.15, 0.15, 0.15).into(),
                             ..default()
                         })
-                        .insert(ColorControl::default())
                         .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section(
-                                "",
-                                TextStyle {
-                                    color: Color::rgb(0.1, 0.9, 0.1),
-                                    ..text_style.clone()
-                                },
-                            ));
+                            add_color_control(parent, &text_style);
+                            #[cfg(debug_assertions)]
+                            {
+                                add_debug_button(parent, &text_style);
+                            }
                         });
                     add_notifications_ui(parent, &text_style);
                     let wasd_size = 42.;
@@ -189,20 +188,4 @@ fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                         });
                 });
         });
-}
-
-fn style_button_interactions(mut button_query: Query<(&mut BackgroundColor, &Interaction)>) {
-    for (mut background_color, interaction) in button_query.iter_mut() {
-        match interaction {
-            Interaction::Clicked => {
-                *background_color = BackgroundColor(Color::rgb(0.25, 0.25, 0.25));
-            }
-            Interaction::Hovered => {
-                *background_color = BackgroundColor(Color::rgb(0.25, 0.25, 0.25));
-            }
-            Interaction::None => {
-                *background_color = BackgroundColor(Color::rgb(0.15, 0.15, 0.15));
-            }
-        }
-    }
 }

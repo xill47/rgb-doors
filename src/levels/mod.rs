@@ -2,10 +2,15 @@ mod camera_fit;
 pub mod panel;
 pub mod tiles;
 
-use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::{LdtkIntCellAppExt, LdtkEntityAppExt}, *};
+use std::time::Duration;
 
-use crate::{actions::Actions, loading::LevelAssets, GameState};
+use bevy::prelude::*;
+use bevy_ecs_ldtk::{
+    prelude::{FieldValue, LdtkEntityAppExt, LdtkIntCellAppExt},
+    *,
+};
+
+use crate::{actions::Actions, loading::LevelAssets, ui::notifications::Notification, GameState};
 
 use self::{
     camera_fit::camera_fit_inside_current_level,
@@ -41,10 +46,34 @@ impl Plugin for LevelsPlugin {
     }
 }
 
-fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
+fn spawn_level(
+    mut commands: Commands,
+    level_assets: Res<LevelAssets>,
+    level_selection: Res<LevelSelection>,
+    ldtk_world: Res<Assets<LdtkAsset>>,
+    mut notification: EventWriter<Notification>,
+) {
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: level_assets.level.clone_weak(),
         ..default()
+    });
+    let ldtk_world = ldtk_world
+        .get(&level_assets.level.clone_weak())
+        .expect("Level asset not loaded");
+    let Some(level) = ldtk_world.get_level(&level_selection) else { return; };
+    level.field_instances.iter().for_each(|field| {
+        if field.identifier == "Notifications" {
+            if let FieldValue::Strings(notifications) = &field.value {
+                notifications.iter().for_each(|notification_text| {
+                    if let Some(notification_text) = notification_text {
+                        notification.send(Notification {
+                            text: notification_text.clone(),
+                            duration: Duration::from_secs_f32(2.5),
+                        });
+                    }
+                });
+            }
+        }
     });
 }
 
@@ -53,16 +82,18 @@ fn respawn_on_level_reset(
     mut actions: EventReader<Actions>,
     level_assets: Res<LevelAssets>,
     ldtk_wrold_q: Query<Entity, With<Handle<LdtkAsset>>>,
+    mut notify: EventWriter<Notification>,
+    level_selection: Res<LevelSelection>,
+    ldtk_world: Res<Assets<LdtkAsset>>,
 ) {
-    for action in actions.iter() {
-        if action.level_reset.is_some() {
-            for entity in ldtk_wrold_q.iter() {
-                commands.entity(entity).despawn_recursive();
-            }
-            commands.spawn(LdtkWorldBundle {
-                ldtk_handle: level_assets.level.clone_weak(),
-                ..default()
-            });
+    if actions.iter().any(|action| action.level_reset.is_some()) {
+        for entity in ldtk_wrold_q.iter() {
+            commands.entity(entity).despawn_recursive();
         }
+        notify.send(Notification {
+            text: "Resetting level...".into(),
+            duration: Duration::from_secs(1),
+        });
+        spawn_level(commands, level_assets, level_selection, ldtk_world, notify);
     }
 }

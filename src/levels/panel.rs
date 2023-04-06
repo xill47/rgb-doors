@@ -3,10 +3,12 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, EntityInstance, GridCoords, LdtkEntity};
 use bevy_ecs_tilemap::prelude::TilemapSize;
+use bevy_mod_aseprite::Aseprite;
 
 use crate::{
     actions::PlayerMovement,
     grid_coords_from_instance,
+    loading::SpriteAssets,
     player::{forbid_movement::ForbiddenMovement, Player},
     ui::notifications::Notification,
 };
@@ -36,11 +38,14 @@ impl Panel {
 
 pub fn setup_panel(
     mut commands: Commands,
-    mut panel_q: Query<(Entity, &mut Panel, &EntityInstance), Without<GridCoords>>,
+    mut panel_q: Query<(Entity, &mut Panel, &EntityInstance, &Transform), Without<GridCoords>>,
     tilemap_q: Query<&TilemapSize>,
+    sprites: Res<SpriteAssets>,
+    aseprites: Res<Assets<Aseprite>>,
+    texture_atlases: Res<Assets<TextureAtlas>>
 ) {
     let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
-    for (entity, mut panel, entity_instance) in panel_q.iter_mut() {
+    for (entity, mut panel, entity_instance, transform) in panel_q.iter_mut() {
         println!("Setting up panel");
         if let Some(door) = entity_instance
             .field_instances
@@ -92,23 +97,92 @@ pub fn setup_panel(
         commands
             .entity(entity)
             .insert(grid_coords_from_instance(entity_instance, tilemap_size));
+
+        if let Some((atlas, sprite)) = sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases) {
+            commands.entity(entity).insert(SpriteBundle {
+                texture: atlas,
+                sprite,
+                transform: *transform,
+                ..default()
+            });
+        }
     }
+}
+
+fn sprite_for_panel(
+    panel: &Panel,
+    panel_aseprite: &Handle<Aseprite>,
+    aseprites: &Assets<Aseprite>,
+    texture_atlases: &Assets<TextureAtlas>
+) -> Option<(Handle<Image>, Sprite)> {
+    let Some(panel_aseprite) = aseprites.get(panel_aseprite) else { return None; };
+    let Some(atlas) = texture_atlases.get(panel_aseprite.atlas()) else { return None; };
+    let Some(door) = panel.opens_door else { return None; };
+    let slice_name = match door {
+        Door::Red => {
+            if panel.is_active() {
+                "RedPressed"
+            } else {
+                "RedUnpressed"
+            }
+        }
+        Door::Green => {
+            if panel.is_active() {
+                "GreenPressed"
+            } else {
+                "GreenUnpressed"
+            }
+        }
+        Door::Blue => {
+            if panel.is_active() {
+                "BluePressed"
+            } else {
+                "BlueUnpressed"
+            }
+        }
+    };
+    let Some(slice) = panel_aseprite.info().slices.get(slice_name) else { return None; };
+    (
+        atlas.texture.clone_weak(),
+        Sprite {
+        rect: Rect {
+            min: Vec2::new(slice.position_x as f32, slice.position_y as f32),
+            max: Vec2::new(
+                slice.position_x as f32 + slice.width as f32,
+                slice.position_y as f32 + slice.height as f32,
+            ),
+        }
+        .into(),
+        ..default()
+    })
+    .into()
 }
 
 #[allow(clippy::type_complexity)]
 pub fn step_on_panel(
     mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
-    mut panel_q: Query<(&GridCoords, &mut Panel)>,
+    mut panel_q: Query<(&GridCoords, &mut Panel, Option<&mut Handle<Image>>, Option<&mut Sprite>)>,
     mut notify: EventWriter<Notification>,
+    sprites: Res<SpriteAssets>,
+    aseprites: Res<Assets<Aseprite>>,
+    texture_atlases: Res<Assets<TextureAtlas>>
 ) {
-    for (panel_coord, mut panel) in panel_q.iter_mut() {
+    for (panel_coord, mut panel, mut image, mut sprite) in panel_q.iter_mut() {
         for (player_coords, mut forbidden_movement) in player_q.iter_mut() {
             if panel_coord == player_coords {
                 notify.send(Notification {
-                    text: "You stepped on a panel!",
+                    text: "You stepped on a panel!".into(),
                     duration: Duration::from_secs(2),
                 });
                 panel.active = true;
+                if let Some((atlas, new_sprite)) = sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases) {
+                    if let Some(entity_image) = image.as_mut() {
+                        **entity_image = atlas;
+                    }
+                    if let Some(sprite) = sprite.as_mut() {
+                        **sprite = new_sprite;
+                    }
+                }
                 for movement in panel.forbids_movement.iter() {
                     forbidden_movement.forbidden.insert(*movement);
                 }

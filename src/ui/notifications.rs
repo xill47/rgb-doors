@@ -3,12 +3,12 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 #[derive(Component, Default, Debug)]
-pub struct NotificationShower {
+pub struct NotificationDisplay {
     notifications: Vec<Notification>,
     current_duration: Duration,
 }
 
-impl NotificationShower {
+impl NotificationDisplay {
     pub fn add_notification(&mut self, notification: Notification) {
         self.notifications.push(notification);
     }
@@ -24,9 +24,9 @@ impl NotificationShower {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Notification {
-    pub text: &'static str,
+    pub text: String,
     pub duration: Duration,
 }
 
@@ -65,11 +65,11 @@ pub fn add_notifications_ui(child_builder: &mut ChildBuilder, text_style: &TextS
                 })
                 .insert(NotificationLine);
         })
-        .insert(NotificationShower::default());
+        .insert(NotificationDisplay::default());
 }
 
 pub fn update_notifications(
-    mut query: Query<(&mut NotificationShower, &Children)>,
+    mut query: Query<(&mut NotificationDisplay, &Children)>,
     mut text_q: Query<&mut Text>,
     mut line_q: Query<&mut Style, With<NotificationLine>>,
     time: Res<Time>,
@@ -104,11 +104,11 @@ pub fn update_notifications(
 
 pub fn add_notification_from_event(
     mut event_reader: EventReader<Notification>,
-    mut notification_shower: Query<&mut NotificationShower>,
+    mut notification_shower: Query<&mut NotificationDisplay>,
 ) {
     for notification in event_reader.iter() {
         for mut shower in notification_shower.iter_mut() {
-            shower.add_notification(*notification);
+            shower.add_notification(notification.clone());
         }
     }
 }

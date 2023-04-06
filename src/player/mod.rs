@@ -61,6 +61,8 @@ fn spawn_player_sprite(
         let player_ase_handle = sprites.player.clone_weak();
         let player_ase = aseprites.get(&player_ase_handle).unwrap();
         let player_anim = AsepriteAnimation::new(player_ase.info(), "idle");
+        let mut transform = *transform;
+        transform.translation.z += 1.;
         commands
             .entity(entity)
             .insert(AsepriteBundle {
@@ -68,7 +70,7 @@ fn spawn_player_sprite(
                 sprite: TextureAtlasSprite::new(player_anim.current_frame()),
                 aseprite: player_ase_handle,
                 animation: player_anim,
-                transform: *transform,
+                transform,
                 ..default()
             })
             .insert(grid_coords_from_instance(ldtk_instance, tilemap_size));

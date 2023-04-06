@@ -25,12 +25,15 @@ pub struct FontAssets {
 }
 
 #[derive(AssetCollection, Resource)]
-pub struct AudioAssets {}
+pub struct AudioAssets {
+    #[asset(path = "sounds/laser.ogg")]
+    pub laser: Handle<AudioSource>,
+    #[asset(path = "sounds/switch.ogg")]
+    pub switch: Handle<AudioSource>,
+}
 
 #[derive(AssetCollection, Resource)]
 pub struct LevelAssets {
-    #[asset(path = "textures/tileset.png")]
-    pub tilset: Handle<Image>,
     #[asset(path = "levels/levels.ldtk")]
     pub level: Handle<LdtkAsset>,
 }
@@ -39,4 +42,6 @@ pub struct LevelAssets {
 pub struct SpriteAssets {
     #[asset(path = "sprites/player.aseprite")]
     pub player: Handle<Aseprite>,
+    #[asset(path = "sprites/plates.aseprite")]
+    pub plates: Handle<Aseprite>
 }
