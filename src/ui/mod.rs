@@ -41,7 +41,7 @@ impl Plugin for UIPlugin {
     }
 }
 
-fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
+pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
     let text_style = TextStyle {
         font: font_assets.fira_sans.clone_weak(),
         color: Color::rgb(0.3, 0.3, 0.3),

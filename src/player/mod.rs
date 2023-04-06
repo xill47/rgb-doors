@@ -3,6 +3,8 @@ pub mod ignore_doors;
 
 use crate::levels::tiles::*;
 use crate::loading::SpriteAssets;
+use crate::ui::color_control::ColorControl;
+use crate::ui::spawn_game_ui;
 use crate::GameState;
 use crate::{actions::Actions, grid_coords_from_instance};
 use bevy::prelude::*;
@@ -34,8 +36,9 @@ impl Plugin for PlayerPlugin {
         app.register_ldtk_entity::<PlayerBundle>("Player")
             .add_systems(
                 (
-                    spawn_player_sprite,
+                    spawn_player_sprite.after(spawn_game_ui),
                     move_player_on_grid,
+                    switch_character_color_on_color_control_change,
                     ignore_doors_on_color_control_change,
                     ignore_doors_on_panel_press,
                     set_initial_color_control,
@@ -53,16 +56,23 @@ fn spawn_player_sprite(
         (With<Player>, Without<AsepriteAnimation>),
     >,
     tilemap_q: Query<&TilemapSize>,
+    color_control_q: Query<&ColorControl>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
     let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
+    let Some(color_control) = color_control_q.iter().next() else { return;};
     for (entity, transform, ldtk_instance) in player_q.iter() {
         let player_ase_handle = sprites.player.clone_weak();
         let player_ase = aseprites.get(&player_ase_handle).unwrap();
-        let player_anim = AsepriteAnimation::new(player_ase.info(), "blue_idle");
+        let anim_tag = match color_control {
+            ColorControl::Red => "red_idle",
+            ColorControl::Blue => "blue_idle",
+        };
+        let player_anim = AsepriteAnimation::new(player_ase.info(), anim_tag);
         let mut transform = *transform;
         transform.translation.z += 1.;
+        transform.translation.y += 8.;
         commands
             .entity(entity)
             .insert(AsepriteBundle {
@@ -74,6 +84,39 @@ fn spawn_player_sprite(
                 ..default()
             })
             .insert(grid_coords_from_instance(ldtk_instance, tilemap_size));
+    }
+}
+
+fn switch_character_color_on_color_control_change(
+    mut player_query: Query<(&mut AsepriteAnimation, &mut TextureAtlasSprite), With<Player>>,
+    color_control_q: Query<&ColorControl, Changed<ColorControl>>,
+    sprites: Res<SpriteAssets>,
+    aseprites: Res<Assets<Aseprite>>,
+) {
+    let Some(color_control) = color_control_q.iter().next() else { return;};
+    for (mut animation, mut sprite) in player_query.iter_mut() {
+        let player_ase_handle = sprites.player.clone_weak();
+        let player_ase = aseprites.get(&player_ase_handle).unwrap();
+        let ase_info = player_ase.info();
+        let anim_tag = match color_control {
+            ColorControl::Red => "red_idle",
+            ColorControl::Blue => "blue_idle",
+        };
+        let mut next_animation = AsepriteAnimation::new(player_ase.info(), anim_tag);
+        let next_animation_frame =
+            animation
+                .current_tag_frame(ase_info)
+                .and_then(|current_tag_frame| {
+                    ase_info
+                        .tags
+                        .get(anim_tag)
+                        .map(|tag| tag.frames.start as usize + current_tag_frame)
+                });
+        if let Some(next_animation_frame) = next_animation_frame {
+            next_animation.set_current_frame(next_animation_frame);
+        }
+        *animation = next_animation;
+        *sprite = TextureAtlasSprite::new(animation.current_frame());
     }
 }
 
