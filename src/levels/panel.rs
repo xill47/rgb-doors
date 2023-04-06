@@ -42,7 +42,7 @@ pub fn setup_panel(
     tilemap_q: Query<&TilemapSize>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
-    texture_atlases: Res<Assets<TextureAtlas>>
+    texture_atlases: Res<Assets<TextureAtlas>>,
 ) {
     let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
     for (entity, mut panel, entity_instance, transform) in panel_q.iter_mut() {
@@ -98,7 +98,9 @@ pub fn setup_panel(
             .entity(entity)
             .insert(grid_coords_from_instance(entity_instance, tilemap_size));
 
-        if let Some((atlas, sprite)) = sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases) {
+        if let Some((atlas, sprite)) =
+            sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases)
+        {
             commands.entity(entity).insert(SpriteBundle {
                 texture: atlas,
                 sprite,
@@ -113,7 +115,7 @@ fn sprite_for_panel(
     panel: &Panel,
     panel_aseprite: &Handle<Aseprite>,
     aseprites: &Assets<Aseprite>,
-    texture_atlases: &Assets<TextureAtlas>
+    texture_atlases: &Assets<TextureAtlas>,
 ) -> Option<(Handle<Image>, Sprite)> {
     let Some(panel_aseprite) = aseprites.get(panel_aseprite) else { return None; };
     let Some(atlas) = texture_atlases.get(panel_aseprite.atlas()) else { return None; };
@@ -145,27 +147,33 @@ fn sprite_for_panel(
     (
         atlas.texture.clone_weak(),
         Sprite {
-        rect: Rect {
-            min: Vec2::new(slice.position_x as f32, slice.position_y as f32),
-            max: Vec2::new(
-                slice.position_x as f32 + slice.width as f32,
-                slice.position_y as f32 + slice.height as f32,
-            ),
-        }
-        .into(),
-        ..default()
-    })
-    .into()
+            rect: Rect {
+                min: Vec2::new(slice.position_x as f32, slice.position_y as f32),
+                max: Vec2::new(
+                    slice.position_x as f32 + slice.width as f32,
+                    slice.position_y as f32 + slice.height as f32,
+                ),
+            }
+            .into(),
+            ..default()
+        },
+    )
+        .into()
 }
 
 #[allow(clippy::type_complexity)]
 pub fn step_on_panel(
     mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
-    mut panel_q: Query<(&GridCoords, &mut Panel, Option<&mut Handle<Image>>, Option<&mut Sprite>)>,
+    mut panel_q: Query<(
+        &GridCoords,
+        &mut Panel,
+        Option<&mut Handle<Image>>,
+        Option<&mut Sprite>,
+    )>,
     mut notify: EventWriter<Notification>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
-    texture_atlases: Res<Assets<TextureAtlas>>
+    texture_atlases: Res<Assets<TextureAtlas>>,
 ) {
     for (panel_coord, mut panel, mut image, mut sprite) in panel_q.iter_mut() {
         for (player_coords, mut forbidden_movement) in player_q.iter_mut() {
@@ -175,7 +183,9 @@ pub fn step_on_panel(
                     duration: Duration::from_secs(2),
                 });
                 panel.active = true;
-                if let Some((atlas, new_sprite)) = sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases) {
+                if let Some((atlas, new_sprite)) =
+                    sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases)
+                {
                     if let Some(entity_image) = image.as_mut() {
                         **entity_image = atlas;
                     }

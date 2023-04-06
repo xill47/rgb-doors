@@ -9,7 +9,14 @@ use bevy::prelude::*;
 
 use crate::{loading::FontAssets, GameState};
 
-use self::{bg_color_tween::*, color_control::*, notifications::*, wasd::*, buttons_styles::style_button_interactions, debug::{add_debug_button, toggle_int_grid}};
+use self::{
+    bg_color_tween::*,
+    buttons_styles::style_button_interactions,
+    color_control::*,
+    debug::{add_debug_button, toggle_int_grid},
+    notifications::*,
+    wasd::*,
+};
 
 pub struct UIPlugin;
 
@@ -39,7 +46,6 @@ fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
         font: font_assets.fira_sans.clone_weak(),
         color: Color::rgb(0.3, 0.3, 0.3),
         font_size: 24.,
-        ..default()
     };
     commands
         .spawn(NodeBundle {

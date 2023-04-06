@@ -43,5 +43,5 @@ pub struct SpriteAssets {
     #[asset(path = "sprites/player.aseprite")]
     pub player: Handle<Aseprite>,
     #[asset(path = "sprites/plates.aseprite")]
-    pub plates: Handle<Aseprite>
+    pub plates: Handle<Aseprite>,
 }
