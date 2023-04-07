@@ -360,24 +360,10 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [{ "__identifier": "Notifications", "__value": [
-				"Hello!",
-				"Your goal is to move to the rightmost part of this corridor",
-				"You have a button that disables lasers on your left (keybind: SPACE)",
-				"You can use WASD (or arrows) to move"
-			], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [ {
+			"fieldInstances": [{ "__identifier": "Notifications", "__value": ["Hello!"], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [{
 				"id": "V_String",
 				"params": ["Hello!"]
-			}, {
-				"id": "V_String",
-				"params": ["Your goal is to move to the rightmost part of this corridor"]
-			}, {
-				"id": "V_String",
-				"params": ["You have a button that disables lasers on your left (keybind: SPACE)"]
-			}, {
-				"id": "V_String",
-				"params": ["You can use WASD (or arrows) to move"]
-			} ] }],
+			}] }],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",

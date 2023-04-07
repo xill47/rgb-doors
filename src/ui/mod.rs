@@ -1,6 +1,6 @@
 pub mod bg_color_tween;
 pub mod buttons_styles;
-pub mod color_control;
+pub mod color_control_view;
 pub mod debug;
 pub mod notifications;
 pub mod wasd;
@@ -12,7 +12,7 @@ use crate::{loading::FontAssets, GameState};
 use self::{
     bg_color_tween::*,
     buttons_styles::style_button_interactions,
-    color_control::*,
+    color_control_view::*,
     debug::{add_debug_button, toggle_int_grid},
     notifications::*,
     wasd::*,
@@ -33,7 +33,6 @@ impl Plugin for UIPlugin {
                     update_notifications,
                     add_notification_from_event,
                     toggle_int_grid,
-                    set_color_control_from_action,
                     change_button_text_on_color_control_change,
                 )
                     .in_set(OnUpdate(GameState::Playing)),

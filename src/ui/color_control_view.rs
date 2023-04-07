@@ -1,26 +1,9 @@
 use bevy::prelude::{ChildBuilder, *};
 
-use crate::actions::Actions;
+use crate::player::color_control::ColorControl;
 
-#[derive(Component, Default, Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ColorControl {
-    Red,
-    #[default]
-    Blue,
-}
-
-impl ColorControl {
-    fn switch(&mut self) {
-        match *self {
-            ColorControl::Red => {
-                *self = ColorControl::Blue;
-            }
-            ColorControl::Blue => {
-                *self = ColorControl::Red;
-            }
-        }
-    }
-}
+#[derive(Component)]
+pub struct ColorControlView;
 
 pub fn add_color_control(parent: &mut ChildBuilder, text_style: &TextStyle) {
     parent
@@ -35,7 +18,7 @@ pub fn add_color_control(parent: &mut ChildBuilder, text_style: &TextStyle) {
             background_color: Color::rgb(0.15, 0.15, 0.15).into(),
             ..default()
         })
-        .insert(ColorControl::default())
+        .insert(ColorControlView)
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
                 "",
@@ -48,21 +31,11 @@ pub fn add_color_control(parent: &mut ChildBuilder, text_style: &TextStyle) {
 }
 
 pub fn switch_red_or_blue_door_ignore_on_color_control_interaction(
-    mut color_control_q: Query<(&mut ColorControl, &Interaction), Changed<Interaction>>,
-) {
-    for (mut color_control, interaction) in color_control_q.iter_mut() {
-        if *interaction == Interaction::Clicked {
-            color_control.switch();
-        }
-    }
-}
-
-pub fn set_color_control_from_action(
-    mut actions: EventReader<Actions>,
+    color_control_view_q: Query<&Interaction, (Changed<Interaction>, With<ColorControlView>)>,
     mut color_control_q: Query<&mut ColorControl>,
 ) {
-    for action in actions.iter() {
-        if action.color_switch.is_some() {
+    for interaction in color_control_view_q.iter() {
+        if *interaction == Interaction::Clicked {
             for mut color_control in color_control_q.iter_mut() {
                 color_control.switch();
             }
@@ -71,15 +44,16 @@ pub fn set_color_control_from_action(
 }
 
 pub fn change_button_text_on_color_control_change(
-    mut color_control_q: Query<(&ColorControl, &Children), Changed<ColorControl>>,
+    color_control_q: Query<&ColorControl, Changed<ColorControl>>,
+    color_control_view_q: Query<&Children, With<ColorControlView>>,
     mut text_q: Query<&mut Text>,
 ) {
-    for (color_control, children) in color_control_q.iter_mut() {
+    for color_control in color_control_q.iter() {
         let text_str = match color_control {
             ColorControl::Red => "Red",
             ColorControl::Blue => "Blue",
         };
-        for child in children.iter() {
+        for child in color_control_view_q.iter().flatten() {
             if let Ok(mut text) = text_q.get_mut(*child) {
                 text.sections[0].value = text_str.to_string();
             }

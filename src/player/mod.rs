@@ -1,20 +1,25 @@
+pub mod color_control;
+pub mod death;
 pub mod forbid_movement;
 pub mod ignore_doors;
+pub mod movement;
 
-use crate::levels::tiles::*;
+use crate::grid_coords_from_instance;
 use crate::loading::SpriteAssets;
-use crate::ui::color_control::ColorControl;
-use crate::ui::spawn_game_ui;
 use crate::GameState;
-use crate::{actions::Actions, grid_coords_from_instance};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_ecs_tilemap::prelude::TilemapTileSize;
-use bevy_ecs_tilemap::{prelude::TilemapSize, tiles::TileStorage};
+use bevy_ecs_tilemap::prelude::TilemapSize;
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation, AsepriteBundle};
 
+use self::color_control::{set_color_control_from_action, ColorControl};
+use self::death::{die_on_tile_with_door, Death};
 use self::forbid_movement::ForbiddenMovement;
 use self::ignore_doors::*;
+use self::movement::{
+    change_transform_based_on_grid, move_player_on_grid, return_to_idle, tween_translations,
+    MovementState,
+};
 
 pub struct PlayerPlugin;
 
@@ -27,21 +32,27 @@ pub struct PlayerBundle {
     entity_instance: EntityInstance,
 
     player: Player,
+    movement_state: MovementState,
     ignore_doors: IgnoreDoors,
+    color_control: ColorControl,
     forbidden_movement: ForbiddenMovement,
 }
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.register_ldtk_entity::<PlayerBundle>("Player")
+        app.add_event::<Death>()
+            .register_ldtk_entity::<PlayerBundle>("Player")
             .add_systems(
                 (
-                    spawn_player_sprite.after(spawn_game_ui),
+                    spawn_player_sprite,
                     move_player_on_grid,
-                    switch_character_color_on_color_control_change,
-                    ignore_doors_on_color_control_change,
+                    change_transform_based_on_grid,
+                    tween_translations.after(change_transform_based_on_grid),
+                    die_on_tile_with_door,
+                    return_to_idle,
+                    switch_player_animation,
                     ignore_doors_on_panel_press,
-                    set_initial_color_control,
+                    set_color_control_from_action,
                 )
                     .in_set(OnUpdate(GameState::Playing)),
             );
@@ -52,24 +63,25 @@ impl Plugin for PlayerPlugin {
 fn spawn_player_sprite(
     mut commands: Commands,
     player_q: Query<
-        (Entity, &Transform, &EntityInstance),
+        (
+            Entity,
+            &Transform,
+            &EntityInstance,
+            &ColorControl,
+            &MovementState,
+        ),
         (With<Player>, Without<AsepriteAnimation>),
     >,
     tilemap_q: Query<&TilemapSize>,
-    color_control_q: Query<&ColorControl>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
     let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
-    let Some(color_control) = color_control_q.iter().next() else { return;};
-    for (entity, transform, ldtk_instance) in player_q.iter() {
+    for (entity, transform, ldtk_instance, color_control, movement_state) in player_q.iter() {
         let player_ase_handle = sprites.player.clone_weak();
         let player_ase = aseprites.get(&player_ase_handle).unwrap();
-        let anim_tag = match color_control {
-            ColorControl::Red => "red_idle",
-            ColorControl::Blue => "blue_idle",
-        };
-        let player_anim = AsepriteAnimation::new(player_ase.info(), anim_tag);
+        let anim_info = movement_state.anim_info(color_control);
+        let player_anim = AsepriteAnimation::new(player_ase.info(), anim_info.tag_name);
         let mut transform = *transform;
         transform.translation.z += 1.;
         transform.translation.y += 8.;
@@ -77,7 +89,10 @@ fn spawn_player_sprite(
             .entity(entity)
             .insert(AsepriteBundle {
                 texture_atlas: player_ase.atlas().clone_weak(),
-                sprite: TextureAtlasSprite::new(player_anim.current_frame()),
+                sprite: TextureAtlasSprite {
+                    flip_x: anim_info.flip_x,
+                    ..TextureAtlasSprite::new(player_anim.current_frame())
+                },
                 aseprite: player_ase_handle,
                 animation: player_anim,
                 transform,
@@ -87,21 +102,29 @@ fn spawn_player_sprite(
     }
 }
 
-fn switch_character_color_on_color_control_change(
-    mut player_query: Query<(&mut AsepriteAnimation, &mut TextureAtlasSprite), With<Player>>,
-    color_control_q: Query<&ColorControl, Changed<ColorControl>>,
+#[allow(clippy::type_complexity)]
+fn switch_player_animation(
+    mut player_query: Query<
+        (
+            &mut AsepriteAnimation,
+            &mut TextureAtlasSprite,
+            &ColorControl,
+            &MovementState,
+        ),
+        (
+            With<Player>,
+            Or<(Changed<ColorControl>, Changed<MovementState>)>,
+        ),
+    >,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
-    let Some(color_control) = color_control_q.iter().next() else { return;};
-    for (mut animation, mut sprite) in player_query.iter_mut() {
+    for (mut animation, mut sprite, color_control, movement_state) in player_query.iter_mut() {
         let player_ase_handle = sprites.player.clone_weak();
         let player_ase = aseprites.get(&player_ase_handle).unwrap();
         let ase_info = player_ase.info();
-        let anim_tag = match color_control {
-            ColorControl::Red => "red_idle",
-            ColorControl::Blue => "blue_idle",
-        };
+        let anim_info = movement_state.anim_info(color_control);
+        let anim_tag = anim_info.tag_name;
         let mut next_animation = AsepriteAnimation::new(player_ase.info(), anim_tag);
         let next_animation_frame =
             animation
@@ -116,87 +139,9 @@ fn switch_character_color_on_color_control_change(
             next_animation.set_current_frame(next_animation_frame);
         }
         *animation = next_animation;
-        *sprite = TextureAtlasSprite::new(animation.current_frame());
+        *sprite = TextureAtlasSprite {
+            flip_x: anim_info.flip_x,
+            ..TextureAtlasSprite::new(animation.current_frame())
+        };
     }
-}
-
-#[allow(clippy::type_complexity)]
-fn move_player_on_grid(
-    mut actions: EventReader<Actions>,
-    mut player_query: Query<
-        (
-            &mut GridCoords,
-            &mut Transform,
-            Option<&IgnoreDoors>,
-            Option<&ForbiddenMovement>,
-        ),
-        With<Player>,
-    >,
-    tile_storage_q: Query<(&TileStorage, &Name)>,
-    tile_size_q: Query<&TilemapTileSize>,
-    tiles_q: Query<(Option<&Wall>, Option<&Floor>, Option<&Door>)>,
-) {
-    let Some(int_grid_tiles) = tile_storage_q
-        .iter()
-        .find(|(_tile, name)| name.as_str() == "IntGrid")
-        .map(|(tile, _name)| tile) else { return;};
-    let Some(tile_size) = tile_size_q.iter().next() else { return;};
-    for actions in actions.iter() {
-        if let Some(player_movement) = &actions.player_movement {
-            let player_movement_vec = player_movement.movement();
-
-            for (mut grid_coords, mut transform, ignore_doors, forbidden_movement) in
-                player_query.iter_mut()
-            {
-                if let Some(forbidden_movement) = forbidden_movement {
-                    if forbidden_movement.forbidden.contains(player_movement) {
-                        continue;
-                    }
-                }
-
-                let target_tile_pos = GridCoords {
-                    x: grid_coords.x + player_movement_vec.x,
-                    y: grid_coords.y + player_movement_vec.y,
-                };
-                let Some(tile_entity) = int_grid_tiles.get(&target_tile_pos.into()) else { continue };
-                let Ok((wall, floor, door)) = tiles_q.get(tile_entity) else { continue };
-
-                if wall.is_some() {
-                    continue;
-                } else if let Some(door) = door {
-                    if let Some(ignore_doors) = ignore_doors {
-                        if ignore_doors.ignores_door(door) {
-                            move_on_grid(
-                                &mut grid_coords,
-                                target_tile_pos,
-                                &mut transform,
-                                player_movement_vec,
-                                tile_size,
-                            );
-                        }
-                    }
-                } else if floor.is_some() {
-                    move_on_grid(
-                        &mut grid_coords,
-                        target_tile_pos,
-                        &mut transform,
-                        player_movement_vec,
-                        tile_size,
-                    );
-                }
-            }
-        }
-    }
-}
-
-fn move_on_grid(
-    grid_coords: &mut Mut<GridCoords>,
-    target_tile_pos: GridCoords,
-    transform: &mut Mut<Transform>,
-    player_movement: IVec2,
-    tile_size: &TilemapTileSize,
-) {
-    **grid_coords = target_tile_pos;
-    transform.translation.x += player_movement.x as f32 * tile_size.x;
-    transform.translation.y += player_movement.y as f32 * tile_size.y;
 }
