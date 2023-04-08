@@ -1,8 +1,8 @@
 mod camera_fit;
 pub mod lasers;
+mod level_transition;
 pub mod panel;
 pub mod tiles;
-mod level_transition;
 
 use std::time::Duration;
 
@@ -21,9 +21,12 @@ use crate::{
 use self::{
     camera_fit::camera_fit_inside_current_level,
     lasers::{hide_lasers, spawn_lasers, LaserBundle},
+    level_transition::{
+        finish_system, level_transition, spawn_finish, FinishBundle, LevelTransition,
+    },
     panel::{setup_panel, step_on_panel, PanelBundle},
     tiles::WallBundle,
-    tiles::{DoorBundle, FloorBundle}, level_transition::{spawn_finish, FinishBundle},
+    tiles::{DoorBundle, FloorBundle},
 };
 
 pub struct LevelsPlugin {
@@ -46,6 +49,7 @@ impl Plugin for LevelsPlugin {
                 ..default()
             })
             .insert_resource(LevelSelection::Index(self.level_index))
+            .add_event::<LevelTransition>()
             .register_ldtk_int_cell_for_layer::<WallBundle>("IntGrid", 1)
             .register_ldtk_int_cell_for_layer::<FloorBundle>("IntGrid", 2)
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 3)
@@ -65,6 +69,8 @@ impl Plugin for LevelsPlugin {
                     respawn_on_death,
                     hide_int_grid,
                     step_on_panel,
+                    finish_system,
+                    level_transition.after(finish_system),
                 )
                     .in_set(OnUpdate(GameState::Playing)),
             )

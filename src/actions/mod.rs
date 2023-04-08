@@ -33,6 +33,15 @@ impl PlayerMovement {
             PlayerMovement::Right => IVec2::new(1, 0),
         }
     }
+
+    pub fn all() -> [PlayerMovement; 4] {
+        [
+            PlayerMovement::Up,
+            PlayerMovement::Down,
+            PlayerMovement::Left,
+            PlayerMovement::Right,
+        ]
+    }
 }
 
 #[derive(Default)]

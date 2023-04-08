@@ -41,7 +41,6 @@ pub fn spawn_lasers(
     }
 }
 
-
 fn laser_aseprite_bundle(
     entity_instance: &EntityInstance,
     laser_sprite: &mut LaserSprite,

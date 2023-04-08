@@ -32,6 +32,7 @@ bevy_kira_audio = { version = "0.15" }
 bevy_asset_loader = { version = "0.15" }
 bevy_mod_aseprite = { version = "0.4" }
 bevy-inspector-egui = { version = "0.18" }
+bevy_tweening = { version = "0.7" }
 
 winit = { version = "0.28" }
 image = { version = "0.24" }

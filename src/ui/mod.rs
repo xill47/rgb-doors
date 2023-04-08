@@ -41,6 +41,9 @@ impl Plugin for UIPlugin {
     }
 }
 
+#[derive(Component)]
+pub struct LevelScreen;
+
 pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
     let text_style = TextStyle {
         font: font_assets.fira_sans.clone_weak(),
@@ -59,6 +62,15 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
             ..default()
         })
         .with_children(|parent| {
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Percent(100.), Val::Percent(80.)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(LevelScreen);
             parent
                 .spawn(NodeBundle {
                     style: Style {

@@ -47,7 +47,7 @@ pub struct SpriteAssets {
     #[asset(path = "sprites/h_lasers.aseprite")]
     pub h_lasers: Handle<Aseprite>,
     #[asset(path = "sprites/v_lasers.aseprite")]
-    pub v_lasers: Handle<Aseprite>, 
+    pub v_lasers: Handle<Aseprite>,
     #[asset(path = "sprites/lift.aseprite")]
-    pub lift: Handle<Aseprite>
+    pub lift: Handle<Aseprite>,
 }
