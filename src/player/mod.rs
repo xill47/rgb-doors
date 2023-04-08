@@ -50,7 +50,8 @@ impl Plugin for PlayerPlugin {
                     tween_translations.after(change_transform_based_on_grid),
                     die_on_tile_with_door,
                     return_to_idle,
-                    switch_player_animation,
+                    switch_player_animation_color_change,
+                    switch_player_animation_movement_change,
                     ignore_doors_on_panel_press,
                     set_color_control_from_action,
                 )
@@ -103,7 +104,7 @@ fn spawn_player_sprite(
 }
 
 #[allow(clippy::type_complexity)]
-fn switch_player_animation(
+fn switch_player_animation_color_change(
     mut player_query: Query<
         (
             &mut AsepriteAnimation,
@@ -111,10 +112,7 @@ fn switch_player_animation(
             &ColorControl,
             &MovementState,
         ),
-        (
-            With<Player>,
-            Or<(Changed<ColorControl>, Changed<MovementState>)>,
-        ),
+        (With<Player>, Changed<ColorControl>),
     >,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
@@ -138,6 +136,34 @@ fn switch_player_animation(
         if let Some(next_animation_frame) = next_animation_frame {
             next_animation.set_current_frame(next_animation_frame);
         }
+        *animation = next_animation;
+        *sprite = TextureAtlasSprite {
+            flip_x: anim_info.flip_x,
+            ..TextureAtlasSprite::new(animation.current_frame())
+        };
+    }
+}
+
+#[allow(clippy::type_complexity)]
+fn switch_player_animation_movement_change(
+    mut player_query: Query<
+        (
+            &mut AsepriteAnimation,
+            &mut TextureAtlasSprite,
+            &ColorControl,
+            &MovementState,
+        ),
+        (With<Player>, Changed<MovementState>),
+    >,
+    sprites: Res<SpriteAssets>,
+    aseprites: Res<Assets<Aseprite>>,
+) {
+    for (mut animation, mut sprite, color_control, movement_state) in player_query.iter_mut() {
+        let player_ase_handle = sprites.player.clone_weak();
+        let player_ase = aseprites.get(&player_ase_handle).unwrap();
+        let anim_info = movement_state.anim_info(color_control);
+        let anim_tag = anim_info.tag_name;
+        let next_animation = AsepriteAnimation::new(player_ase.info(), anim_tag);
         *animation = next_animation;
         *sprite = TextureAtlasSprite {
             flip_x: anim_info.flip_x,
