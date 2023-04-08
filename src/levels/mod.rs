@@ -1,4 +1,5 @@
 mod camera_fit;
+pub mod lasers;
 pub mod panel;
 pub mod tiles;
 
@@ -10,10 +11,14 @@ use bevy_ecs_ldtk::{
     *,
 };
 
-use crate::{actions::Actions, loading::LevelAssets, ui::notifications::Notification, GameState, player::death::Death};
+use crate::{
+    actions::Actions, loading::LevelAssets, player::death::Death, ui::notifications::Notification,
+    GameState,
+};
 
 use self::{
     camera_fit::camera_fit_inside_current_level,
+    lasers::{hide_lasers, spawn_lasers, LaserBundle},
     panel::{setup_panel, step_on_panel, PanelBundle},
     tiles::WallBundle,
     tiles::{DoorBundle, FloorBundle},
@@ -37,11 +42,14 @@ impl Plugin for LevelsPlugin {
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 4)
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 5)
             .register_ldtk_entity::<PanelBundle>("Panel")
+            .register_ldtk_entity::<LaserBundle>("Laser")
             .add_systems((spawn_level, hide_int_grid).in_schedule(OnEnter(GameState::Playing)))
             .add_systems(
                 (
                     setup_panel,
                     respawn_on_level_reset,
+                    spawn_lasers,
+                    hide_lasers.after(spawn_lasers),
                     respawn_on_death,
                     hide_int_grid,
                     step_on_panel,

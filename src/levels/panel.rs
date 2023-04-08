@@ -46,7 +46,6 @@ pub fn setup_panel(
 ) {
     let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
     for (entity, mut panel, entity_instance, transform) in panel_q.iter_mut() {
-        println!("Setting up panel");
         if let Some(door) = entity_instance
             .field_instances
             .iter()

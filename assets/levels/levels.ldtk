@@ -11,7 +11,7 @@
 	"iid": "c1908850-c640-11ed-b3e8-ebd778739926",
 	"jsonVersion": "1.2.5",
 	"appBuildId": 464870,
-	"nextUid": 30,
+	"nextUid": 35,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -251,6 +251,100 @@
 			"pivotX": 0,
 			"pivotY": 0,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "Laser",
+			"uid": 30,
+			"tags": [],
+			"exportToToc": false,
+			"doc": "(Visuals only)",
+			"width": 16,
+			"height": 16,
+			"resizableX": false,
+			"resizableY": false,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#2CE8F5",
+			"renderMode": "Cross",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": [
+				{
+					"identifier": "Axis",
+					"doc": null,
+					"__type": "LocalEnum.Axis",
+					"uid": 33,
+					"type": "F_Enum(32)",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "Color",
+					"doc": null,
+					"__type": "LocalEnum.Door",
+					"uid": 34,
+					"type": "F_Enum(25)",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -305,7 +399,8 @@
 			{ "id": "A", "tileId": null, "color": 14120515, "__tileSrcRect": null },
 			{ "id": "S", "tileId": null, "color": 15389866, "__tileSrcRect": null },
 			{ "id": "D", "tileId": null, "color": 14984818, "__tileSrcRect": null }
-		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
+		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
+		{ "identifier": "Axis", "uid": 32, "values": [ { "id": "Vertical", "tileId": null, "color": 12470831, "__tileSrcRect": null }, { "id": "Horizontal", "tileId": null, "color": 14120515, "__tileSrcRect": null } ], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
 	], "externalEnums": [], "levelFields": [
 		{
 			"identifier": "Notifications",
@@ -425,6 +520,75 @@
 							"defUid": 9,
 							"px": [32,48],
 							"fieldInstances": []
+						},
+						{
+							"__identifier": "Laser",
+							"__grid": [3,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "30a44690-c640-11ed-b3b5-e33507c3b363",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [48,48],
+							"fieldInstances": [
+								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Vertical"]
+								}] },
+								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Red"]
+								}] }
+							]
+						},
+						{
+							"__identifier": "Laser",
+							"__grid": [5,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "30e87b80-c640-11ed-b3b5-8de266ea6343",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [80,48],
+							"fieldInstances": [
+								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Vertical"]
+								}] },
+								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Red"]
+								}] }
+							]
+						},
+						{
+							"__identifier": "Laser",
+							"__grid": [6,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "31130df0-c640-11ed-b3b5-1184e2b15f8a",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [96,48],
+							"fieldInstances": [
+								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Vertical"]
+								}] },
+								{ "__identifier": "Color", "__value": "Blue", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Blue"]
+								}] }
+							]
 						}
 					]
 				},
