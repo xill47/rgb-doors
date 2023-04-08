@@ -7,7 +7,7 @@ use crate::{
     player::{color_control::ColorControl, ignore_doors::IgnoreDoors, Player},
 };
 
-use super::tiles::Door;
+use super::{tiles::Door, RgbEntityAsepriteBundle};
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub struct LaserSprite(Door);
@@ -41,20 +41,13 @@ pub fn spawn_lasers(
     }
 }
 
-#[derive(Default, Bundle)]
-pub struct LaserAsepriteBundle {
-    pub aseprite: Handle<Aseprite>,
-    pub animation: AsepriteAnimation,
-    pub sprite: TextureAtlasSprite,
-    pub texture_atlas: Handle<TextureAtlas>,
-}
 
 fn laser_aseprite_bundle(
     entity_instance: &EntityInstance,
     laser_sprite: &mut LaserSprite,
     sprites: &SpriteAssets,
     aseprites: &Assets<Aseprite>,
-) -> Option<LaserAsepriteBundle> {
+) -> Option<RgbEntityAsepriteBundle> {
     let axis_field = entity_instance
         .field_instances
         .iter()
@@ -91,7 +84,7 @@ fn laser_aseprite_bundle(
     *laser_sprite = actual_laser_sprite;
     let aseprite = aseprites.get(&sprite)?;
     let laser_animation = AsepriteAnimation::new(aseprite.info(), tag_name);
-    LaserAsepriteBundle {
+    RgbEntityAsepriteBundle {
         texture_atlas: aseprite.atlas().clone_weak(),
         sprite: TextureAtlasSprite::new(laser_animation.current_frame()),
         aseprite: sprite,

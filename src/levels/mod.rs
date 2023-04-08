@@ -2,6 +2,7 @@ mod camera_fit;
 pub mod lasers;
 pub mod panel;
 pub mod tiles;
+mod level_transition;
 
 use std::time::Duration;
 
@@ -10,6 +11,7 @@ use bevy_ecs_ldtk::{
     prelude::{FieldValue, LdtkEntityAppExt, LdtkIntCellAppExt},
     *,
 };
+use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use crate::{
     actions::Actions, loading::LevelAssets, player::death::Death, ui::notifications::Notification,
@@ -21,11 +23,19 @@ use self::{
     lasers::{hide_lasers, spawn_lasers, LaserBundle},
     panel::{setup_panel, step_on_panel, PanelBundle},
     tiles::WallBundle,
-    tiles::{DoorBundle, FloorBundle},
+    tiles::{DoorBundle, FloorBundle}, level_transition::{spawn_finish, FinishBundle},
 };
 
 pub struct LevelsPlugin {
     pub level_index: usize,
+}
+
+#[derive(Default, Bundle)]
+pub struct RgbEntityAsepriteBundle {
+    pub aseprite: Handle<Aseprite>,
+    pub animation: AsepriteAnimation,
+    pub sprite: TextureAtlasSprite,
+    pub texture_atlas: Handle<TextureAtlas>,
 }
 
 impl Plugin for LevelsPlugin {
@@ -43,6 +53,7 @@ impl Plugin for LevelsPlugin {
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 5)
             .register_ldtk_entity::<PanelBundle>("Panel")
             .register_ldtk_entity::<LaserBundle>("Laser")
+            .register_ldtk_entity::<FinishBundle>("Finish")
             .add_systems((spawn_level, hide_int_grid).in_schedule(OnEnter(GameState::Playing)))
             .add_systems(
                 (
@@ -50,6 +61,7 @@ impl Plugin for LevelsPlugin {
                     respawn_on_level_reset,
                     spawn_lasers,
                     hide_lasers.after(spawn_lasers),
+                    spawn_finish,
                     respawn_on_death,
                     hide_int_grid,
                     step_on_panel,

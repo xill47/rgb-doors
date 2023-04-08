@@ -30,6 +30,17 @@ pub struct Notification {
     pub duration: Duration,
 }
 
+const DEFAULT_NOTIFICATION_DURATION: Duration = Duration::from_secs(2);
+
+impl Notification {
+    pub fn new(text: String) -> Self {
+        Self {
+            text,
+            duration: DEFAULT_NOTIFICATION_DURATION,
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct NotificationLine;
 
