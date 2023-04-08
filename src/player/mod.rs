@@ -5,15 +5,16 @@ pub mod ignore_doors;
 pub mod movement;
 
 use crate::grid_coords_from_instance;
+use crate::levels::RgbEntityAsepriteBundle;
 use crate::loading::SpriteAssets;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::prelude::TilemapSize;
-use bevy_mod_aseprite::{Aseprite, AsepriteAnimation, AsepriteBundle};
+use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use self::color_control::{set_color_control_from_action, ColorControl};
-use self::death::{die_on_tile_with_door, Death};
+use self::death::{die_on_tile_with_door, play_death_animation, Death, Dying};
 use self::forbid_movement::ForbiddenMovement;
 use self::ignore_doors::*;
 use self::movement::{
@@ -54,6 +55,7 @@ impl Plugin for PlayerPlugin {
                     switch_player_animation_movement_change,
                     ignore_doors_on_panel_press,
                     set_color_control_from_action,
+                    play_death_animation,
                 )
                     .in_set(OnUpdate(GameState::Playing)),
             );
@@ -71,7 +73,7 @@ fn spawn_player_sprite(
             &ColorControl,
             &MovementState,
         ),
-        (With<Player>, Without<AsepriteAnimation>),
+        (With<Player>, Without<AsepriteAnimation>, Without<Dying>),
     >,
     tilemap_q: Query<&TilemapSize>,
     sprites: Res<SpriteAssets>,
@@ -86,9 +88,10 @@ fn spawn_player_sprite(
         let mut transform = *transform;
         transform.translation.z += 1.;
         transform.translation.y += 8.;
+        info!("spawn player sprite for {:?}", entity);
         commands
             .entity(entity)
-            .insert(AsepriteBundle {
+            .insert(RgbEntityAsepriteBundle {
                 texture_atlas: player_ase.atlas().clone_weak(),
                 sprite: TextureAtlasSprite {
                     flip_x: anim_info.flip_x,
@@ -96,8 +99,6 @@ fn spawn_player_sprite(
                 },
                 aseprite: player_ase_handle,
                 animation: player_anim,
-                transform,
-                ..default()
             })
             .insert(grid_coords_from_instance(ldtk_instance, tilemap_size));
     }
@@ -112,7 +113,7 @@ fn switch_player_animation_color_change(
             &ColorControl,
             &MovementState,
         ),
-        (With<Player>, Changed<ColorControl>),
+        (With<Player>, Changed<ColorControl>, Without<Dying>),
     >,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
@@ -153,7 +154,7 @@ fn switch_player_animation_movement_change(
             &ColorControl,
             &MovementState,
         ),
-        (With<Player>, Changed<MovementState>),
+        (With<Player>, Changed<MovementState>, Without<Dying>),
     >,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,

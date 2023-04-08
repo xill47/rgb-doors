@@ -14,7 +14,10 @@ use bevy_ecs_ldtk::{
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use crate::{
-    actions::Actions, loading::LevelAssets, player::death::Death, ui::notifications::Notification,
+    actions::Actions,
+    loading::LevelAssets,
+    player::death::{play_death_animation, Death},
+    ui::notifications::Notification,
     GameState,
 };
 
@@ -66,7 +69,7 @@ impl Plugin for LevelsPlugin {
                     spawn_lasers,
                     hide_lasers.after(spawn_lasers),
                     spawn_finish,
-                    respawn_on_death,
+                    respawn_on_death.after(play_death_animation),
                     hide_int_grid,
                     step_on_panel,
                     finish_system,
@@ -78,13 +81,14 @@ impl Plugin for LevelsPlugin {
     }
 }
 
-fn spawn_level(
+pub fn spawn_level(
     mut commands: Commands,
     level_assets: Res<LevelAssets>,
     level_selection: Res<LevelSelection>,
     ldtk_world: Res<Assets<LdtkAsset>>,
     mut notification: EventWriter<Notification>,
 ) {
+    info!("Spawning level: {:?}", level_selection);
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: level_assets.level.clone_weak(),
         ..default()
@@ -117,7 +121,7 @@ fn hide_int_grid(mut ldtk_int_grid_q: Query<(&mut Visibility, &Name), Added<Laye
     }
 }
 
-fn respawn_on_level_reset(
+pub fn respawn_on_level_reset(
     mut commands: Commands,
     mut actions: EventReader<Actions>,
     level_assets: Res<LevelAssets>,
@@ -138,7 +142,7 @@ fn respawn_on_level_reset(
     }
 }
 
-fn respawn_on_death(
+pub fn respawn_on_death(
     mut commands: Commands,
     mut death: EventReader<Death>,
     level_assets: Res<LevelAssets>,
@@ -147,7 +151,9 @@ fn respawn_on_death(
     level_selection: Res<LevelSelection>,
     ldtk_world: Res<Assets<LdtkAsset>>,
 ) {
-    if death.iter().len() > 0 {
+    if !death.is_empty() {
+        death.clear();
+        info!("Respawning on death");
         for entity in ldtk_wrold_q.iter() {
             commands.entity(entity).despawn_recursive();
         }

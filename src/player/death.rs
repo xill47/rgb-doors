@@ -1,21 +1,77 @@
-use bevy::prelude::{Changed, EventWriter, Query};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
+use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
-use crate::levels::tiles::Door;
+use crate::{animation_finished, levels::tiles::Door, loading::SpriteAssets};
 
-use super::{color_control::ColorControl, ignore_doors::IgnoreDoors};
+use super::{color_control::ColorControl, ignore_doors::IgnoreDoors, Player};
 
 pub struct Death;
 
+#[derive(Component)]
+pub struct Dying;
+
 pub fn die_on_tile_with_door(
-    mut death_event: EventWriter<Death>,
-    player_q: Query<(&GridCoords, &ColorControl, &IgnoreDoors), Changed<ColorControl>>,
+    mut commands: Commands,
+    player_q: Query<(Entity, &GridCoords, &ColorControl, &IgnoreDoors), Changed<ColorControl>>,
     door_q: Query<(&GridCoords, &Door)>,
 ) {
-    for (player_coords, color_control, ignore_doors) in player_q.iter() {
+    for (entity, player_coords, color_control, ignore_doors) in player_q.iter() {
         for (door_coords, door) in door_q.iter() {
             if player_coords == door_coords && !ignore_doors.ignores_door(color_control, door) {
-                death_event.send(Death);
+                commands.entity(entity).insert(Dying);
+            }
+        }
+    }
+}
+
+#[derive(Default)]
+pub enum DyingState {
+    #[default]
+    None,
+    Animation,
+    Dead,
+}
+
+#[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
+pub fn play_death_animation(
+    mut dying_player_q: Query<
+        (&mut AsepriteAnimation, &mut TextureAtlasSprite),
+        (With<Player>, With<Dying>),
+    >,
+    alive_player_q: Query<Entity, (With<Player>, Without<Dying>)>,
+    time: Res<Time>,
+    mut dying_state: Local<DyingState>,
+    mut death: EventWriter<Death>,
+    aseprites: Res<Assets<Aseprite>>,
+    sprites: Res<SpriteAssets>,
+) {
+    match *dying_state {
+        DyingState::None => {
+            for (mut animation, mut sprite) in dying_player_q.iter_mut() {
+                let player_ase_handle = sprites.player.clone_weak();
+                let player_ase = aseprites.get(&player_ase_handle).unwrap();
+                let next_animation = AsepriteAnimation::new(player_ase.info(), "death");
+                *animation = next_animation;
+                *sprite = TextureAtlasSprite::new(animation.current_frame());
+                *dying_state = DyingState::Animation;
+            }
+        }
+        DyingState::Animation => {
+            for (animation, _) in dying_player_q.iter_mut() {
+                if animation_finished(&animation, &time, &sprites.player, &aseprites)
+                    .unwrap_or(true)
+                {
+                    info!("Sending death signal");
+                    death.send(Death);
+                    *dying_state = DyingState::Dead;
+                }
+            }
+        }
+        DyingState::Dead => {
+            for _ in alive_player_q.iter() {
+                *dying_state = DyingState::None;
             }
         }
     }

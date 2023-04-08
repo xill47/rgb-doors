@@ -10,8 +10,8 @@ use crate::{
 };
 
 use super::{
-    color_control::ColorControl, forbid_movement::ForbiddenMovement, ignore_doors::IgnoreDoors,
-    Player,
+    color_control::ColorControl, death::Dying, forbid_movement::ForbiddenMovement,
+    ignore_doors::IgnoreDoors, Player,
 };
 
 #[derive(Component, Default, Clone, Copy)]
@@ -88,7 +88,7 @@ pub fn move_player_on_grid(
             Option<&ForbiddenMovement>,
             Option<&mut MovementState>,
         ),
-        With<Player>,
+        (With<Player>, Without<Dying>),
     >,
     tile_storage_q: Query<(&TileStorage, &Name)>,
     tiles_q: Query<(Option<&Wall>, Option<&Floor>, Option<&Door>)>,

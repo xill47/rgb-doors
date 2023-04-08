@@ -20,6 +20,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{EntityInstance, GridCoords};
 use bevy_ecs_tilemap::prelude::TilemapSize;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 use ui::UIPlugin;
 
 #[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash)]
@@ -64,4 +65,15 @@ pub fn grid_coords_from_instance(
         x: ldtk_instance.grid.x,
         y: tilemap_size.y as i32 - ldtk_instance.grid.y - 1,
     }
+}
+
+pub fn animation_finished(
+    animation: &AsepriteAnimation,
+    time: &Time,
+    ase_handle: &Handle<Aseprite>,
+    aseprites: &Assets<Aseprite>,
+) -> Option<bool> {
+    let player_ase = aseprites.get(ase_handle)?;
+    let remaining_frames = animation.remaining_tag_frames(player_ase.info())?;
+    Some(remaining_frames < 1 && animation.frame_finished(time.delta()))
 }
