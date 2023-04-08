@@ -34,7 +34,7 @@ impl Plugin for UIPlugin {
                     add_notification_from_event,
                     toggle_int_grid,
                     change_button_text_on_color_control_change,
-                    set_wasd_forbidden
+                    set_wasd_forbidden,
                 )
                     .in_set(OnUpdate(GameState::Playing)),
             );

@@ -24,19 +24,13 @@ pub struct LaserBundle {
 pub fn spawn_lasers(
     mut commands: Commands,
     mut laser_query: Query<
-        (
-            Entity,
-            &EntityInstance,
-            &mut LaserSprite,
-            &mut Transform,
-        ),
+        (Entity, &EntityInstance, &mut LaserSprite, &mut Transform),
         (With<LaserSprite>, Without<AsepriteAnimation>),
     >,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
-    for (entity, entity_instance, mut laser_sprite, mut transform) in laser_query.iter_mut()
-    {
+    for (entity, entity_instance, mut laser_sprite, mut transform) in laser_query.iter_mut() {
         // get aseprite type by entity instance enum
         if let Some(aseprite_bundle) =
             laser_aseprite_bundle(entity_instance, &mut laser_sprite, &sprites, &aseprites)
