@@ -86,12 +86,12 @@ fn finish_sprite(
 
 #[allow(clippy::type_complexity)]
 pub fn finish_system(
-    player_q: Query<&GridCoords, (With<Player>, Changed<GridCoords>)>,
+    mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
     mut finish_query: Query<(&Finish, &GridCoords)>,
     mut notifications: EventWriter<Notification>,
     mut level_transition: EventWriter<LevelTransition>,
 ) {
-    for player_grid_coords in player_q.iter() {
+    for (player_grid_coords, mut forbid_movement) in player_q.iter_mut() {
         for (finish, grid_coords) in finish_query.iter_mut() {
             if player_grid_coords == grid_coords {
                 if let Some(message) = &finish.message {
@@ -99,6 +99,8 @@ pub fn finish_system(
                 }
                 if finish.next_level.is_some() {
                     level_transition.send(LevelTransition);
+                } else {
+                    forbid_movement.forbidden = PlayerMovement::all().into_iter().collect();
                 }
             }
         }
