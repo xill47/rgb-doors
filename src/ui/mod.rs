@@ -7,7 +7,7 @@ pub mod wasd;
 
 use bevy::prelude::*;
 
-use crate::{loading::FontAssets, GameState};
+use crate::{actions::PlayerMovement, loading::FontAssets, GameState};
 
 use self::{
     bg_color_tween::*,
@@ -34,6 +34,7 @@ impl Plugin for UIPlugin {
                     add_notification_from_event,
                     toggle_int_grid,
                     change_button_text_on_color_control_change,
+                    set_wasd_forbidden
                 )
                     .in_set(OnUpdate(GameState::Playing)),
             );
@@ -98,7 +99,6 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                         flex_direction: FlexDirection::Column,
                         ..default()
                     };
-                    let wasd_background_color = Color::rgb(0.75, 0.75, 0.75);
                     parent
                         .spawn(NodeBundle {
                             style: Style {
@@ -116,18 +116,13 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                             ..default()
                         })
                         .with_children(|parent| {
-                            parent
-                                .spawn(NodeBundle {
-                                    style: wasd_node_style.clone(),
-                                    background_color: wasd_background_color.into(),
-                                    ..default()
-                                })
-                                .insert(Wasd::Up)
-                                .with_children(|parent| {
-                                    parent
-                                        .spawn(TextBundle::from_section("W", text_style.clone()))
-                                        .insert(Wasd::Up);
-                                });
+                            add_wasd(
+                                parent,
+                                &wasd_node_style,
+                                &text_style,
+                                "W",
+                                PlayerMovement::Up,
+                            );
                             parent
                                 .spawn(NodeBundle {
                                     style: Style {
@@ -144,51 +139,27 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                     ..default()
                                 })
                                 .with_children(|parent| {
-                                    parent
-                                        .spawn(NodeBundle {
-                                            style: wasd_node_style.clone(),
-                                            background_color: wasd_background_color.into(),
-                                            ..default()
-                                        })
-                                        .insert(Wasd::Left)
-                                        .with_children(|parent| {
-                                            parent
-                                                .spawn(TextBundle::from_section(
-                                                    "A",
-                                                    text_style.clone(),
-                                                ))
-                                                .insert(Wasd::Left);
-                                        });
-                                    parent
-                                        .spawn(NodeBundle {
-                                            style: wasd_node_style.clone(),
-                                            background_color: wasd_background_color.into(),
-                                            ..default()
-                                        })
-                                        .insert(Wasd::Down)
-                                        .with_children(|parent| {
-                                            parent
-                                                .spawn(TextBundle::from_section(
-                                                    "S",
-                                                    text_style.clone(),
-                                                ))
-                                                .insert(Wasd::Down);
-                                        });
-                                    parent
-                                        .spawn(NodeBundle {
-                                            style: wasd_node_style.clone(),
-                                            background_color: wasd_background_color.into(),
-                                            ..default()
-                                        })
-                                        .insert(Wasd::Right)
-                                        .with_children(|parent| {
-                                            parent
-                                                .spawn(TextBundle::from_section(
-                                                    "D",
-                                                    text_style.clone(),
-                                                ))
-                                                .insert(Wasd::Right);
-                                        });
+                                    add_wasd(
+                                        parent,
+                                        &wasd_node_style,
+                                        &text_style,
+                                        "A",
+                                        PlayerMovement::Left,
+                                    );
+                                    add_wasd(
+                                        parent,
+                                        &wasd_node_style,
+                                        &text_style,
+                                        "S",
+                                        PlayerMovement::Down,
+                                    );
+                                    add_wasd(
+                                        parent,
+                                        &wasd_node_style,
+                                        &text_style,
+                                        "D",
+                                        PlayerMovement::Right,
+                                    );
                                 });
                         });
                 });

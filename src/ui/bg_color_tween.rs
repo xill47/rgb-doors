@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub struct BackgroundColorTween {
     pub start_color: Color,
     pub end_color: Color,
+    pub after_color: Color,
     pub duration: f32,
     pub elapsed: f32,
 }
@@ -17,7 +18,7 @@ pub fn tween_background_color(
         background_color_tween.elapsed += time.delta_seconds();
         let t = background_color_tween.elapsed / background_color_tween.duration;
         if t >= 1.0 {
-            background_color.0 = background_color_tween.end_color;
+            background_color.0 = background_color_tween.after_color;
             commands.entity(entity).remove::<BackgroundColorTween>();
         } else {
             let start_color_as_vec4 =
