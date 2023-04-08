@@ -23,6 +23,7 @@ pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Notification>()
+            .add_event::<CleanNotificationQueue>()
             .add_system(spawn_game_ui.in_schedule(OnEnter(GameState::Playing)))
             .add_systems(
                 (
@@ -31,8 +32,9 @@ impl Plugin for UIPlugin {
                     style_button_interactions,
                     switch_red_or_blue_door_ignore_on_color_control_interaction,
                     update_notifications,
-                    add_notification_from_event,
+                    display_notifications,
                     toggle_int_grid,
+                    clean_notifications.before(display_notifications),
                     change_button_text_on_color_control_change,
                     set_wasd_forbidden,
                 )

@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, *};
-use bevy_ecs_tilemap::prelude::TilemapSize;
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use crate::{
     actions::PlayerMovement,
-    animation_finished, grid_coords_from_instance,
+    animation_finished,
     loading::SpriteAssets,
     player::{forbid_movement::ForbiddenMovement, Player},
     ui::{bg_color_tween::BackgroundColorTween, notifications::Notification, LevelScreen},
@@ -27,6 +26,9 @@ pub struct FinishBundle {
 
     #[from_entity_instance]
     entity_instance: EntityInstance,
+
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 
 #[allow(clippy::type_complexity)]
@@ -36,11 +38,9 @@ pub fn spawn_finish(
         (Entity, &EntityInstance, &mut Finish, &mut Transform),
         Without<AsepriteAnimation>,
     >,
-    tilemap_size_q: Query<&TilemapSize>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
-    let Some(tilemap_size) = tilemap_size_q.iter().next() else { return; };
     for (entity, entity_instance, mut finish, mut transform) in finish_query.iter_mut() {
         finish.next_level = entity_instance
             .field_instances
@@ -60,10 +60,7 @@ pub fn spawn_finish(
             });
         transform.translation.y += 8.0;
         if let Some(aseprite_bundle) = finish_sprite(&sprites, &aseprites) {
-            commands
-                .entity(entity)
-                .insert(aseprite_bundle)
-                .insert(grid_coords_from_instance(entity_instance, tilemap_size));
+            commands.entity(entity).insert(aseprite_bundle);
         }
     }
 }

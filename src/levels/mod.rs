@@ -17,7 +17,7 @@ use crate::{
     actions::Actions,
     loading::LevelAssets,
     player::death::{play_death_animation, Death},
-    ui::notifications::Notification,
+    ui::notifications::{CleanNotificationQueue, Notification},
     GameState,
 };
 
@@ -87,6 +87,7 @@ pub fn spawn_level(
     level_selection: Res<LevelSelection>,
     ldtk_world: Res<Assets<LdtkAsset>>,
     mut notification: EventWriter<Notification>,
+    mut clean_notification: EventWriter<CleanNotificationQueue>,
 ) {
     info!("Spawning level: {:?}", level_selection);
     commands.spawn(LdtkWorldBundle {
@@ -97,6 +98,7 @@ pub fn spawn_level(
         .get(&level_assets.level.clone_weak())
         .expect("Level asset not loaded");
     let Some(level) = ldtk_world.get_level(&level_selection) else { return; };
+    clean_notification.send(CleanNotificationQueue);
     level.field_instances.iter().for_each(|field| {
         if field.identifier == "Notifications" {
             if let FieldValue::Strings(notifications) = &field.value {
@@ -121,6 +123,7 @@ fn hide_int_grid(mut ldtk_int_grid_q: Query<(&mut Visibility, &Name), Added<Laye
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn respawn_on_level_reset(
     mut commands: Commands,
     mut actions: EventReader<Actions>,
@@ -129,6 +132,7 @@ pub fn respawn_on_level_reset(
     mut notify: EventWriter<Notification>,
     level_selection: Res<LevelSelection>,
     ldtk_world: Res<Assets<LdtkAsset>>,
+    clean_notification: EventWriter<CleanNotificationQueue>,
 ) {
     if actions.iter().any(|action| action.level_reset.is_some()) {
         for entity in ldtk_wrold_q.iter() {
@@ -138,10 +142,18 @@ pub fn respawn_on_level_reset(
             text: "Resetting level...".into(),
             duration: Duration::from_secs(1),
         });
-        spawn_level(commands, level_assets, level_selection, ldtk_world, notify);
+        spawn_level(
+            commands,
+            level_assets,
+            level_selection,
+            ldtk_world,
+            notify,
+            clean_notification,
+        );
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn respawn_on_death(
     mut commands: Commands,
     mut death: EventReader<Death>,
@@ -150,6 +162,7 @@ pub fn respawn_on_death(
     mut notify: EventWriter<Notification>,
     level_selection: Res<LevelSelection>,
     ldtk_world: Res<Assets<LdtkAsset>>,
+    clean_notification: EventWriter<CleanNotificationQueue>,
 ) {
     if !death.is_empty() {
         death.clear();
@@ -161,6 +174,13 @@ pub fn respawn_on_death(
             text: "You died :(".into(),
             duration: Duration::from_secs(1),
         });
-        spawn_level(commands, level_assets, level_selection, ldtk_world, notify);
+        spawn_level(
+            commands,
+            level_assets,
+            level_selection,
+            ldtk_world,
+            notify,
+            clean_notification,
+        );
     }
 }

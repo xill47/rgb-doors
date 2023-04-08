@@ -41,6 +41,8 @@ impl Notification {
     }
 }
 
+pub struct CleanNotificationQueue;
+
 #[derive(Component)]
 pub struct NotificationLine;
 
@@ -113,13 +115,26 @@ pub fn update_notifications(
     }
 }
 
-pub fn add_notification_from_event(
+pub fn display_notifications(
     mut event_reader: EventReader<Notification>,
-    mut notification_shower: Query<&mut NotificationDisplay>,
+    mut notification_display_q: Query<&mut NotificationDisplay>,
 ) {
     for notification in event_reader.iter() {
-        for mut shower in notification_shower.iter_mut() {
-            shower.add_notification(notification.clone());
+        for mut display in notification_display_q.iter_mut() {
+            display.add_notification(notification.clone());
+        }
+    }
+}
+
+pub fn clean_notifications(
+    mut event_reader: EventReader<CleanNotificationQueue>,
+    mut notification_display_q: Query<&mut NotificationDisplay>,
+) {
+    if !event_reader.is_empty() {
+        event_reader.clear();
+        for mut display in notification_display_q.iter_mut() {
+            display.notifications.clear();
+            display.current_duration = Duration::from_secs(0);
         }
     }
 }

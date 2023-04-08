@@ -2,12 +2,10 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, EntityInstance, GridCoords, LdtkEntity};
-use bevy_ecs_tilemap::prelude::TilemapSize;
 use bevy_mod_aseprite::Aseprite;
 
 use crate::{
     actions::PlayerMovement,
-    grid_coords_from_instance,
     loading::SpriteAssets,
     player::{forbid_movement::ForbiddenMovement, Player},
     ui::notifications::Notification,
@@ -21,6 +19,9 @@ pub struct PanelBundle {
 
     #[from_entity_instance]
     entity_instance: EntityInstance,
+
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 
 #[derive(Component, Clone, Default, Debug)]
@@ -38,13 +39,11 @@ impl Panel {
 
 pub fn setup_panel(
     mut commands: Commands,
-    mut panel_q: Query<(Entity, &mut Panel, &EntityInstance, &Transform), Without<GridCoords>>,
-    tilemap_q: Query<&TilemapSize>,
+    mut panel_q: Query<(Entity, &mut Panel, &EntityInstance, &Transform), Without<Sprite>>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
     texture_atlases: Res<Assets<TextureAtlas>>,
 ) {
-    let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
     for (entity, mut panel, entity_instance, transform) in panel_q.iter_mut() {
         if let Some(door) = entity_instance
             .field_instances
@@ -93,9 +92,6 @@ pub fn setup_panel(
         {
             panel.forbids_movement = forbidden_movement;
         }
-        commands
-            .entity(entity)
-            .insert(grid_coords_from_instance(entity_instance, tilemap_size));
 
         if let Some((atlas, sprite)) =
             sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases)

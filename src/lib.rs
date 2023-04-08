@@ -17,8 +17,6 @@ use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{EntityInstance, GridCoords};
-use bevy_ecs_tilemap::prelude::TilemapSize;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 use ui::UIPlugin;
@@ -55,16 +53,6 @@ impl Plugin for GamePlugin {
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle { ..default() });
-}
-
-pub fn grid_coords_from_instance(
-    ldtk_instance: &EntityInstance,
-    tilemap_size: &TilemapSize,
-) -> GridCoords {
-    GridCoords {
-        x: ldtk_instance.grid.x,
-        y: tilemap_size.y as i32 - ldtk_instance.grid.y - 1,
-    }
 }
 
 pub fn animation_finished(

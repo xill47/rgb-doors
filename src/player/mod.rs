@@ -4,13 +4,11 @@ pub mod forbid_movement;
 pub mod ignore_doors;
 pub mod movement;
 
-use crate::grid_coords_from_instance;
 use crate::levels::RgbEntityAsepriteBundle;
 use crate::loading::SpriteAssets;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_ecs_tilemap::prelude::TilemapSize;
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use self::color_control::{set_color_control_from_action, ColorControl};
@@ -31,6 +29,9 @@ pub struct Player;
 pub struct PlayerBundle {
     #[from_entity_instance]
     entity_instance: EntityInstance,
+
+    #[grid_coords]
+    grid_coords: GridCoords,
 
     player: Player,
     movement_state: MovementState,
@@ -65,42 +66,30 @@ impl Plugin for PlayerPlugin {
 #[allow(clippy::type_complexity)]
 fn spawn_player_sprite(
     mut commands: Commands,
-    player_q: Query<
-        (
-            Entity,
-            &Transform,
-            &EntityInstance,
-            &ColorControl,
-            &MovementState,
-        ),
-        (With<Player>, Without<AsepriteAnimation>, Without<Dying>),
+    mut player_q: Query<
+        (Entity, &mut Transform, &ColorControl, &MovementState),
+        (With<Player>, Without<AsepriteAnimation>),
     >,
-    tilemap_q: Query<&TilemapSize>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
 ) {
-    let Some(tilemap_size) = tilemap_q.iter().next() else { return;};
-    for (entity, transform, ldtk_instance, color_control, movement_state) in player_q.iter() {
+    for (entity, mut transform, color_control, movement_state) in player_q.iter_mut() {
         let player_ase_handle = sprites.player.clone_weak();
         let player_ase = aseprites.get(&player_ase_handle).unwrap();
         let anim_info = movement_state.anim_info(color_control);
         let player_anim = AsepriteAnimation::new(player_ase.info(), anim_info.tag_name);
-        let mut transform = *transform;
         transform.translation.z += 1.;
         transform.translation.y += 8.;
         info!("spawn player sprite for {:?}", entity);
-        commands
-            .entity(entity)
-            .insert(RgbEntityAsepriteBundle {
-                texture_atlas: player_ase.atlas().clone_weak(),
-                sprite: TextureAtlasSprite {
-                    flip_x: anim_info.flip_x,
-                    ..TextureAtlasSprite::new(player_anim.current_frame())
-                },
-                aseprite: player_ase_handle,
-                animation: player_anim,
-            })
-            .insert(grid_coords_from_instance(ldtk_instance, tilemap_size));
+        commands.entity(entity).insert(RgbEntityAsepriteBundle {
+            texture_atlas: player_ase.atlas().clone_weak(),
+            sprite: TextureAtlasSprite {
+                flip_x: anim_info.flip_x,
+                ..TextureAtlasSprite::new(player_anim.current_frame())
+            },
+            aseprite: player_ase_handle,
+            animation: player_anim,
+        });
     }
 }
 
