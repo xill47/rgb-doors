@@ -75,11 +75,11 @@ pub fn style_wasd_on_player_movement_action(
 
 pub fn set_wasd_forbidden(
     mut commands: Commands,
-    mut wasd_query: Query<(Entity, &BackgroundColor, &mut Wasd)>,
+    mut wasd_query: Query<(Entity, &mut BackgroundColor, &mut Wasd)>,
     forbidden_query: Query<&ForbiddenMovement, Changed<ForbiddenMovement>>,
 ) {
     for forbidden in forbidden_query.iter() {
-        for (entity, background_color, mut wasd) in wasd_query.iter_mut() {
+        for (entity, mut background_color, mut wasd) in wasd_query.iter_mut() {
             if forbidden.forbidden.contains(&wasd.player_movement) {
                 wasd.forbidden = true;
                 commands.entity(entity).insert(BackgroundColorTween {
@@ -89,6 +89,9 @@ pub fn set_wasd_forbidden(
                     duration: 0.7,
                     elapsed: 0.0,
                 });
+            } else {
+                wasd.forbidden = false;
+                background_color.0 = WASD_DEFAULT_COLOR;
             }
         }
     }
