@@ -4,7 +4,10 @@ use bevy::prelude::*;
 
 use crate::{
     actions::{Actions, MovementDirection},
-    player::forbid_movement::ForbiddenMovement,
+    player::movement_effects::{
+        MovementSideEffects,
+        SideEffect::{DisabledMovement, MultiMove, None},
+    },
 };
 
 use super::bg_color_tween::BackgroundColorTween;
@@ -75,23 +78,39 @@ pub fn style_wasd_on_player_movement_action(
 
 pub fn set_wasd_forbidden(
     mut commands: Commands,
-    mut wasd_query: Query<(Entity, &mut BackgroundColor, &mut Wasd)>,
-    forbidden_query: Query<&ForbiddenMovement, Changed<ForbiddenMovement>>,
+    mut wasd_query: Query<(Entity, &mut BackgroundColor, &mut Wasd, &Children)>,
+    mut text_q: Query<&mut Text>,
+    side_effects_q: Query<&MovementSideEffects, Changed<MovementSideEffects>>,
 ) {
-    for forbidden in forbidden_query.iter() {
-        for (entity, mut background_color, mut wasd) in wasd_query.iter_mut() {
-            if forbidden.forbidden.contains(&wasd.player_movement) {
-                wasd.forbidden = true;
-                commands.entity(entity).insert(BackgroundColorTween {
-                    start_color: background_color.0,
-                    end_color: WASD_FORBID_COLOR,
-                    after_color: WASD_FORBID_COLOR,
-                    duration: 0.7,
-                    elapsed: 0.0,
-                });
-            } else {
-                wasd.forbidden = false;
-                background_color.0 = WASD_DEFAULT_COLOR;
+    for side_effects in side_effects_q.iter() {
+        for (entity, mut background_color, mut wasd, children) in wasd_query.iter_mut() {
+            let side_effect = side_effects.get(wasd.player_movement);
+            match side_effect {
+                None => {
+                    wasd.forbidden = false;
+                    background_color.0 = WASD_DEFAULT_COLOR;
+                }
+                DisabledMovement => {
+                    wasd.forbidden = true;
+                    commands.entity(entity).insert(BackgroundColorTween {
+                        start_color: background_color.0,
+                        end_color: WASD_FORBID_COLOR,
+                        after_color: WASD_FORBID_COLOR,
+                        duration: 0.7,
+                        elapsed: 0.0,
+                    });
+                }
+                MultiMove(count) => {
+                    wasd.forbidden = false;
+                    for child in children.iter() {
+                        if let Ok(mut text) = text_q.get_mut(*child) {
+                            text.sections[0] = TextSection {
+                                value: count.to_string(),
+                                style: text.sections[0].style.clone(),
+                            };
+                        }
+                    }
+                }
             }
         }
     }

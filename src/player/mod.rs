@@ -1,8 +1,8 @@
 pub mod color_control;
 pub mod death;
-pub mod forbid_movement;
-pub mod ignore_doors;
 pub mod movement;
+pub mod movement_effects;
+pub mod open_lasers;
 
 use crate::levels::RgbEntityAsepriteBundle;
 use crate::loading::SpriteAssets;
@@ -13,12 +13,12 @@ use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use self::color_control::{set_color_control_from_action, ColorControl};
 use self::death::{die_on_tile_with_door, play_death_animation, Death, Dying};
-use self::forbid_movement::ForbiddenMovement;
-use self::ignore_doors::*;
 use self::movement::{
-    change_transform_based_on_grid, move_player_on_grid, return_to_idle, tween_translations,
-    MovementState,
+    change_transform_based_on_grid, next_movement_state, player_action_to_movement,
+    tween_translations, MovementState,
 };
+use self::movement_effects::MovementSideEffects;
+use self::open_lasers::*;
 
 pub struct PlayerPlugin;
 
@@ -35,9 +35,8 @@ pub struct PlayerBundle {
 
     player: Player,
     movement_state: MovementState,
-    ignore_doors: IgnoreDoors,
     color_control: ColorControl,
-    forbidden_movement: ForbiddenMovement,
+    forbidden_movement: MovementSideEffects,
 }
 
 impl Plugin for PlayerPlugin {
@@ -47,14 +46,16 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 (
                     spawn_player_sprite,
-                    move_player_on_grid,
+                    player_action_to_movement,
                     change_transform_based_on_grid,
                     tween_translations.after(change_transform_based_on_grid),
-                    die_on_tile_with_door,
-                    return_to_idle,
+                    die_on_tile_with_door
+                        .after(open_lasers)
+                        .after(next_movement_state),
+                    next_movement_state,
                     switch_player_animation_color_change,
                     switch_player_animation_movement_change,
-                    ignore_doors_on_panel_press,
+                    open_lasers.after(set_color_control_from_action),
                     set_color_control_from_action,
                     play_death_animation,
                 )

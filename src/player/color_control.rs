@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::actions::Actions;
+use crate::{actions::Actions, levels::tiles::LaserType};
 
 #[derive(Component, Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ColorControl {
@@ -18,6 +18,13 @@ impl ColorControl {
             ColorControl::Blue => {
                 *self = ColorControl::Red;
             }
+        }
+    }
+
+    pub fn as_laser_type(&self) -> LaserType {
+        match *self {
+            ColorControl::Red => LaserType::Red,
+            ColorControl::Blue => LaserType::Blue,
         }
     }
 }

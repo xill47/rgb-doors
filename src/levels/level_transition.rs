@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, *};
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
@@ -6,7 +8,11 @@ use crate::{
     actions::MovementDirection,
     animation_finished,
     loading::SpriteAssets,
-    player::{forbid_movement::ForbiddenMovement, Player},
+    player::{
+        movement::TweenTranslation,
+        movement_effects::{MovementSideEffects, SideEffect},
+        Player,
+    },
     ui::{bg_color_tween::BackgroundColorTween, notifications::Notification, LevelScreen},
 };
 
@@ -83,7 +89,10 @@ fn finish_sprite(
 
 #[allow(clippy::type_complexity)]
 pub fn finish_system(
-    mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
+    mut player_q: Query<
+        (&GridCoords, &mut MovementSideEffects),
+        (With<Player>, Changed<GridCoords>),
+    >,
     mut finish_query: Query<(&Finish, &GridCoords)>,
     mut notifications: EventWriter<Notification>,
     mut level_transition: EventWriter<LevelTransition>,
@@ -97,7 +106,9 @@ pub fn finish_system(
                 if finish.next_level.is_some() {
                     level_transition.send(LevelTransition);
                 } else {
-                    forbid_movement.forbidden = MovementDirection::all().into_iter().collect();
+                    for movement_direction in MovementDirection::all() {
+                        forbid_movement.set(movement_direction, SideEffect::DisabledMovement);
+                    }
                 }
             }
         }
@@ -110,8 +121,6 @@ pub enum LevelTransitionStep {
     None,
     LiftWillClose,
     LiftCloses,
-    LifeWillMove,
-    LiftMoves,
     ScreenWillClose,
     ScreenCloses,
     ScreenWillOpen,
@@ -127,8 +136,8 @@ pub fn level_transition(
     mut level_transition_req: EventReader<LevelTransition>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
-    mut lift_q: Query<&mut AsepriteAnimation, With<Finish>>,
-    mut player_q: Query<&mut ForbiddenMovement, With<Player>>,
+    mut lift_q: Query<(&mut AsepriteAnimation, Entity, &Transform), With<Finish>>,
+    mut player_q: Query<(&mut MovementSideEffects, Entity, &Transform), With<Player>>,
     mut screen_q: Query<(Entity, &BackgroundColor), With<LevelScreen>>,
     finish_q: Query<&Finish>,
     time: Res<Time>,
@@ -140,13 +149,17 @@ pub fn level_transition(
                 level_transition_req.clear();
                 *transition_step = LevelTransitionStep::LiftWillClose;
                 for mut forbid_movement in player_q.iter_mut() {
-                    forbid_movement.forbidden = MovementDirection::all().into_iter().collect();
+                    for direction in MovementDirection::all() {
+                        forbid_movement
+                            .0
+                            .set(direction, SideEffect::DisabledMovement);
+                    }
                 }
             }
         }
         LevelTransitionStep::LiftWillClose => {
             let mut successful = false;
-            for mut lift_anim in lift_q.iter_mut() {
+            for (mut lift_anim, _, _) in lift_q.iter_mut() {
                 let lift_ase_handle = sprites.lift.clone_weak();
                 let Some(lift_ase) = aseprites.get(&lift_ase_handle) else { successful = false; continue; };
                 *lift_anim = AsepriteAnimation::new(lift_ase.info(), "left_door_close");
@@ -161,10 +174,11 @@ pub fn level_transition(
         }
         LevelTransitionStep::LiftCloses => {
             for mut lift_anim in lift_q.iter_mut() {
-                if animation_finished(&lift_anim, &time, &sprites.lift, &aseprites).unwrap_or(true)
+                if animation_finished(&lift_anim.0, &time, &sprites.lift, &aseprites)
+                    .unwrap_or(true)
                 {
-                    lift_anim.pause();
-                    *transition_step = LevelTransitionStep::LifeWillMove
+                    lift_anim.0.pause();
+                    *transition_step = LevelTransitionStep::ScreenWillClose
                 }
             }
         }
@@ -178,6 +192,26 @@ pub fn level_transition(
                     duration,
                     after_color: Color::BLACK,
                     elapsed: 0.,
+                });
+            }
+            for mut lift_anim in lift_q.iter_mut() {
+                let lift_ase_handle = sprites.lift.clone_weak();
+                let Some(lift_ase) = aseprites.get(&lift_ase_handle) else { continue; };
+                *lift_anim.0 = AsepriteAnimation::new(lift_ase.info(), "lift_move");
+                lift_anim.0.play();
+                commmands.entity(lift_anim.1).insert(TweenTranslation {
+                    start: lift_anim.2.translation,
+                    end: lift_anim.2.translation + Vec3::new(0., -30., 0.),
+                    duration: Duration::from_secs_f32(duration),
+                    ..default()
+                });
+            }
+            for player in player_q.iter_mut() {
+                commmands.entity(player.1).insert(TweenTranslation {
+                    start: player.2.translation,
+                    end: player.2.translation + Vec3::new(0., -30., 0.),
+                    duration: Duration::from_secs_f32(duration),
+                    ..default()
                 });
             }
             *transition_step = LevelTransitionStep::ScreenCloses;
@@ -209,30 +243,6 @@ pub fn level_transition(
         LevelTransitionStep::ScreenOpens => {
             if timer.tick(time.delta()).just_finished() {
                 *transition_step = LevelTransitionStep::None;
-            }
-        }
-        LevelTransitionStep::LifeWillMove => {
-            let mut successful = false;
-            for mut lift_anim in lift_q.iter_mut() {
-                let lift_ase_handle = sprites.lift.clone_weak();
-                let Some(lift_ase) = aseprites.get(&lift_ase_handle) else { successful = false; continue; };
-                *lift_anim = AsepriteAnimation::new(lift_ase.info(), "lift_move");
-                lift_anim.play();
-                successful = true;
-            }
-            *transition_step = if successful {
-                LevelTransitionStep::LiftMoves
-            } else {
-                LevelTransitionStep::ScreenWillClose
-            };
-        }
-        LevelTransitionStep::LiftMoves => {
-            for mut lift_anim in lift_q.iter_mut() {
-                if animation_finished(&lift_anim, &time, &sprites.lift, &aseprites).unwrap_or(true)
-                {
-                    lift_anim.pause();
-                    *transition_step = LevelTransitionStep::ScreenWillClose
-                }
             }
         }
     }

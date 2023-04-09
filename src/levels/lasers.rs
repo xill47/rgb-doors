@@ -1,16 +1,16 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::FieldValue::Enum, EntityInstance, LdtkEntity};
+use bevy_ecs_ldtk::{prelude::FieldValue::Enum, EntityInstance, GridCoords, LdtkEntity};
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
-use crate::{
-    loading::SpriteAssets,
-    player::{color_control::ColorControl, ignore_doors::IgnoreDoors, Player},
+use crate::loading::SpriteAssets;
+
+use super::{
+    tiles::{Laser, LaserType},
+    RgbEntityAsepriteBundle,
 };
 
-use super::{tiles::Door, RgbEntityAsepriteBundle};
-
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Default)]
-pub struct LaserSprite(Door);
+pub struct LaserSprite(LaserType);
 
 #[derive(Bundle, LdtkEntity)]
 pub struct LaserBundle {
@@ -18,6 +18,9 @@ pub struct LaserBundle {
 
     #[from_entity_instance]
     entity_instance: EntityInstance,
+
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 
 #[allow(clippy::type_complexity)]
@@ -75,9 +78,9 @@ fn laser_aseprite_bundle(
         _ => None,
     }?;
     let actual_laser_sprite = match color_value.as_str() {
-        "Red" => Some(LaserSprite(Door::Red)),
-        "Green" => Some(LaserSprite(Door::Green)),
-        "Blue" => Some(LaserSprite(Door::Blue)),
+        "Red" => Some(LaserSprite(LaserType::Red)),
+        "Green" => Some(LaserSprite(LaserType::Green)),
+        "Blue" => Some(LaserSprite(LaserType::Blue)),
         _ => None,
     }?;
     *laser_sprite = actual_laser_sprite;
@@ -93,27 +96,15 @@ fn laser_aseprite_bundle(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn hide_lasers(
-    mut laser_query: Query<(&mut Visibility, &LaserSprite), With<LaserSprite>>,
-    player_query: Query<
-        (&ColorControl, &IgnoreDoors),
-        (
-            With<Player>,
-            Or<(Changed<ColorControl>, Changed<IgnoreDoors>, Added<Player>)>,
-        ),
-    >,
+pub fn laser_visibility(
+    mut laser_sprite_q: Query<(&mut Visibility, &GridCoords), With<LaserSprite>>,
+    laser_q: Query<(&Laser, &GridCoords), Changed<Laser>>,
 ) {
-    for (mut laser_visibility, laser_sprite) in laser_query.iter_mut() {
-        let visible = player_query
+    for (mut laser_visibility, sprite_coords) in laser_sprite_q.iter_mut() {
+        let visible = laser_q
             .iter()
-            .fold(None, |visible, (color_control, ignore_doors)| {
-                let ignores_door = ignore_doors.ignores_door(color_control, &laser_sprite.0);
-                if let Some(visible) = visible {
-                    Some(visible && !ignores_door)
-                } else {
-                    Some(!ignores_door)
-                }
-            });
+            .find(|(_, laser_coords)| **laser_coords == *sprite_coords)
+            .map(|(laser, _)| !laser.is_open);
         if let Some(visible) = visible {
             *laser_visibility = if visible {
                 Visibility::Visible

@@ -21,7 +21,22 @@ pub struct WallBundle {
 }
 
 #[derive(Component, PartialEq, Eq, Debug, Clone, Copy, Default)]
-pub enum Door {
+pub struct Laser {
+    pub laser_type: LaserType,
+    pub is_open: bool,
+}
+
+impl Laser {
+    pub fn new(laser_type: LaserType) -> Self {
+        Self {
+            laser_type,
+            is_open: false,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum LaserType {
     #[default]
     Red,
     Green,
@@ -30,23 +45,26 @@ pub enum Door {
 
 #[derive(Bundle)]
 pub struct DoorBundle {
-    pub door: Door,
+    pub door: Laser,
 }
 
 #[derive(Bundle)]
 pub struct TileBundle {
     pub floor: Floor,
     pub wall: Wall,
-    pub door: Door,
+    pub door: Laser,
 }
 
 impl LdtkIntCell for DoorBundle {
     fn bundle_int_cell(int_grid_cell: IntGridCell, _: &LayerInstance) -> Self {
-        match int_grid_cell.value {
-            3 => DoorBundle { door: Door::Red },
-            4 => DoorBundle { door: Door::Green },
-            5 => DoorBundle { door: Door::Blue },
+        let laser_type = match int_grid_cell.value {
+            3 => LaserType::Red,
+            4 => LaserType::Green,
+            5 => LaserType::Blue,
             value => panic!("Invalid door value: {}", value),
+        };
+        Self {
+            door: Laser::new(laser_type),
         }
     }
 }

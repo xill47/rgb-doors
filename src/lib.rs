@@ -36,7 +36,7 @@ impl Plugin for GamePlugin {
         app.add_state::<GameState>()
             .add_plugin(LoadingPlugin)
             .add_plugin(MenuPlugin)
-            .add_plugin(LevelsPlugin { level_index: 0 })
+            .add_plugin(LevelsPlugin { level_index: 2 })
             .add_plugin(ActionsPlugin)
             .add_plugin(InternalAudioPlugin)
             .add_plugin(PlayerPlugin)

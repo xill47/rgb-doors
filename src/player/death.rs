@@ -2,23 +2,30 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::GridCoords;
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
-use crate::{animation_finished, levels::tiles::Door, loading::SpriteAssets};
+use crate::{animation_finished, levels::tiles::Laser, loading::SpriteAssets};
 
-use super::{color_control::ColorControl, ignore_doors::IgnoreDoors, Player};
+use super::{color_control::ColorControl, Player};
 
 pub struct Death;
 
 #[derive(Component)]
 pub struct Dying;
 
+#[allow(clippy::type_complexity)]
 pub fn die_on_tile_with_door(
     mut commands: Commands,
-    player_q: Query<(Entity, &GridCoords, &ColorControl, &IgnoreDoors), Changed<ColorControl>>,
-    door_q: Query<(&GridCoords, &Door)>,
+    player_q: Query<
+        (Entity, &GridCoords),
+        (
+            Or<(Changed<ColorControl>, Changed<GridCoords>)>,
+            With<Player>,
+        ),
+    >,
+    door_q: Query<(&GridCoords, &Laser)>,
 ) {
-    for (entity, player_coords, color_control, ignore_doors) in player_q.iter() {
+    for (entity, player_coords) in player_q.iter() {
         for (door_coords, door) in door_q.iter() {
-            if player_coords == door_coords && !ignore_doors.ignores_door(color_control, door) {
+            if player_coords == door_coords && !door.is_open {
                 commands.entity(entity).insert(Dying);
             }
         }

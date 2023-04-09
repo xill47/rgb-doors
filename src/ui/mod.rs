@@ -46,6 +46,9 @@ impl Plugin for UIPlugin {
 #[derive(Component)]
 pub struct LevelScreen;
 
+#[derive(Component)]
+pub struct RootUI;
+
 pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
     let text_style = TextStyle {
         font: font_assets.fira_sans.clone_weak(),
@@ -177,5 +180,6 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                 });
                         });
                 });
-        });
+        })
+        .insert(RootUI);
 }

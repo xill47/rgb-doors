@@ -6,12 +6,11 @@ use bevy_ecs_tilemap::{prelude::TilemapTileSize, tiles::TileStorage};
 
 use crate::{
     actions::{Actions, MovementDirection},
-    levels::tiles::{Door, Floor, Wall},
+    levels::tiles::Wall,
 };
 
 use super::{
-    color_control::ColorControl, death::Dying, forbid_movement::ForbiddenMovement,
-    ignore_doors::IgnoreDoors, Player,
+    color_control::ColorControl, death::Dying, movement_effects::MovementSideEffects, Player,
 };
 
 #[derive(Component, Default, Clone, Copy)]
@@ -19,6 +18,10 @@ pub enum MovementState {
     #[default]
     Idle,
     Moving(MovementDirection),
+    MultiMoving {
+        direction: MovementDirection,
+        left: u32,
+    },
 }
 
 pub struct AnimationInfo {
@@ -33,30 +36,34 @@ impl MovementState {
                 ColorControl::Red => "red_idle",
                 ColorControl::Blue => "blue_idle",
             },
-            MovementState::Moving(direction) => match direction {
-                MovementDirection::Up => "walk_up",
-                MovementDirection::Down => match color_control {
-                    ColorControl::Red => "red_walk_down",
-                    ColorControl::Blue => "blue_walk_down",
-                },
-                MovementDirection::Left => match color_control {
-                    ColorControl::Red => "red_walk_right",
-                    ColorControl::Blue => "blue_walk_right",
-                },
-                MovementDirection::Right => match color_control {
-                    ColorControl::Red => "red_walk_right",
-                    ColorControl::Blue => "blue_walk_right",
-                },
-            },
+            MovementState::Moving(direction) | MovementState::MultiMoving { direction, .. } => {
+                match direction {
+                    MovementDirection::Up => "walk_up",
+                    MovementDirection::Down => match color_control {
+                        ColorControl::Red => "red_walk_down",
+                        ColorControl::Blue => "blue_walk_down",
+                    },
+                    MovementDirection::Left => match color_control {
+                        ColorControl::Red => "red_walk_right",
+                        ColorControl::Blue => "blue_walk_right",
+                    },
+                    MovementDirection::Right => match color_control {
+                        ColorControl::Red => "red_walk_right",
+                        ColorControl::Blue => "blue_walk_right",
+                    },
+                }
+            }
         };
         let flip_x = match self {
             MovementState::Idle => false,
-            MovementState::Moving(direction) => match direction {
-                MovementDirection::Up => false,
-                MovementDirection::Down => false,
-                MovementDirection::Left => true,
-                MovementDirection::Right => false,
-            },
+            MovementState::Moving(direction) | MovementState::MultiMoving { direction, .. } => {
+                match direction {
+                    MovementDirection::Up => false,
+                    MovementDirection::Down => false,
+                    MovementDirection::Left => true,
+                    MovementDirection::Right => false,
+                }
+            }
         };
         AnimationInfo { tag_name, flip_x }
     }
@@ -65,6 +72,28 @@ impl MovementState {
         match self {
             MovementState::Idle => false,
             MovementState::Moving(_) => true,
+            MovementState::MultiMoving { .. } => true,
+        }
+    }
+
+    pub fn movement_direction(&self) -> Option<MovementDirection> {
+        match self {
+            MovementState::Idle => None,
+            MovementState::Moving(direction) => Some(*direction),
+            MovementState::MultiMoving { direction, .. } => Some(*direction),
+        }
+    }
+
+    pub fn next_coords(&self, coords: &GridCoords) -> GridCoords {
+        match self {
+            MovementState::Idle => *coords,
+            MovementState::Moving(direction) | MovementState::MultiMoving { direction, .. } => {
+                let direction = direction.as_ivec2();
+                GridCoords {
+                    x: coords.x + direction.x,
+                    y: coords.y + direction.y,
+                }
+            }
         }
     }
 }
@@ -78,74 +107,49 @@ pub struct TweenTranslation {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn move_player_on_grid(
+pub fn player_action_to_movement(
     mut actions: EventReader<Actions>,
     mut player_query: Query<
-        (
-            &mut GridCoords,
-            Option<&IgnoreDoors>,
-            Option<&ColorControl>,
-            Option<&ForbiddenMovement>,
-            Option<&mut MovementState>,
-        ),
+        (&MovementSideEffects, &mut MovementState, &mut GridCoords),
         (With<Player>, Without<Dying>),
     >,
     tile_storage_q: Query<(&TileStorage, &Name)>,
-    tiles_q: Query<(Option<&Wall>, Option<&Floor>, Option<&Door>)>,
+    tiles_q: Query<Option<&Wall>>,
 ) {
     let Some(int_grid_tiles) = tile_storage_q
         .iter()
-        .find(|(_tile, name)| name.as_str() == "IntGrid")
-        .map(|(tile, _name)| tile) else { return;};
+        .find(|(_, name)| name.as_str() == "IntGrid")
+        .map(|(tile_storage, _)| tile_storage)
+        else { return; };
     for actions in actions.iter() {
         if let Some(player_movement) = &actions.player_movement {
-            let player_movement_vec = player_movement.as_ivec2();
-            for (
-                mut grid_coords,
-                ignore_doors,
-                color_control,
-                forbidden_movement,
-                movement_state,
-            ) in player_query.iter_mut()
-            {
-                if let Some(forbidden_movement) = forbidden_movement {
-                    if forbidden_movement.forbidden.contains(player_movement) {
-                        continue;
-                    }
+            for (side_effects, mut movement_state, mut coords) in player_query.iter_mut() {
+                if movement_state.is_moving() {
+                    continue;
                 }
+                let default_movement = MovementState::Moving(*player_movement);
+                *movement_state = side_effects
+                    .get(*player_movement)
+                    .transform_movement_state(default_movement);
 
-                let target_tile_pos = GridCoords {
-                    x: grid_coords.x + player_movement_vec.x,
-                    y: grid_coords.y + player_movement_vec.y,
-                };
-
-                let Some(tile_entity) = int_grid_tiles.get(&target_tile_pos.into()) else { continue };
-                let Ok((wall, floor, door)) = tiles_q.get(tile_entity) else { continue };
-                let is_moving = movement_state
-                    .as_ref()
-                    .map(|movement_state| movement_state.is_moving())
+                let next_coords = movement_state.next_coords(coords.as_ref());
+                let is_wall = int_grid_tiles
+                    .get(&next_coords.into())
+                    .map(|tile| {
+                        tiles_q
+                            .get(tile)
+                            .map(|tile| tile.is_some())
+                            .unwrap_or(false)
+                    })
                     .unwrap_or(false);
-
-                if wall.is_none()
-                    && !is_moving
-                    && ignores_door(ignore_doors, color_control, door).unwrap_or(floor.is_some())
-                {
-                    *grid_coords = target_tile_pos;
-                    if let Some(mut movement_state) = movement_state {
-                        *movement_state = MovementState::Moving(*player_movement);
-                    }
+                if is_wall {
+                    *movement_state = MovementState::Idle;
+                } else {
+                    *coords = next_coords;
                 }
             }
         }
     }
-}
-
-fn ignores_door(
-    ignore_doors: Option<&IgnoreDoors>,
-    color_control: Option<&ColorControl>,
-    door: Option<&Door>,
-) -> Option<bool> {
-    Some(ignore_doors?.ignores_door(color_control?, door?))
 }
 
 #[allow(clippy::type_complexity)]
@@ -159,7 +163,7 @@ pub fn change_transform_based_on_grid(
 ) {
     let Some(tilemap_size) = tilemap_size_q.iter().next() else { return; };
     for (entity, transform, movement_state) in player_query.iter() {
-        if let MovementState::Moving(player_movement) = movement_state {
+        if let Some(player_movement) = movement_state.movement_direction() {
             let movement_vec = player_movement.as_ivec2();
             let target_pos = transform.translation
                 + Vec3::new(
@@ -194,13 +198,31 @@ pub fn tween_translations(
     }
 }
 
-pub fn return_to_idle(
+pub fn next_movement_state(
     mut removed: RemovedComponents<TweenTranslation>,
-    mut player_query: Query<&mut MovementState>,
+    mut player_query: Query<(&mut MovementState, &mut GridCoords), Without<Dying>>,
 ) {
     for entity in removed.iter() {
-        if let Ok(mut movement_state) = player_query.get_mut(entity) {
-            *movement_state = MovementState::Idle;
+        if let Ok((mut movement_state, mut grid_coords)) = player_query.get_mut(entity) {
+            *movement_state = match *movement_state {
+                MovementState::Idle => MovementState::Idle,
+                MovementState::Moving(_) => MovementState::Idle,
+                MovementState::MultiMoving { direction, left } => {
+                    if left > 1 {
+                        *grid_coords = GridCoords {
+                            x: grid_coords.x + direction.as_ivec2().x,
+                            y: grid_coords.y + direction.as_ivec2().y,
+                        };
+                    }
+                    match left {
+                        2.. => MovementState::MultiMoving {
+                            direction,
+                            left: left - 1,
+                        },
+                        _ => MovementState::Idle,
+                    }
+                }
+            };
         }
     }
 }

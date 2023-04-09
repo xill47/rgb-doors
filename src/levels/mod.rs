@@ -22,7 +22,7 @@ use crate::{
 
 use self::{
     camera_fit::camera_fit_inside_current_level,
-    lasers::{hide_lasers, spawn_lasers, LaserBundle},
+    lasers::{laser_visibility, spawn_lasers, LaserBundle},
     level_transition::{
         finish_system, level_transition, spawn_finish, FinishBundle, LevelTransition,
     },
@@ -68,7 +68,7 @@ impl Plugin for LevelsPlugin {
                     setup_panel,
                     respawn_on_level_reset,
                     spawn_lasers,
-                    hide_lasers.after(spawn_lasers),
+                    laser_visibility.after(spawn_lasers),
                     spawn_finish,
                     respawn_on_death,
                     reset_level,

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{cmp::min, time::Duration};
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::FieldValue, EntityInstance, GridCoords, LdtkEntity};
@@ -7,15 +7,18 @@ use bevy_mod_aseprite::Aseprite;
 use crate::{
     actions::MovementDirection,
     loading::SpriteAssets,
-    player::{forbid_movement::ForbiddenMovement, Player},
+    player::{
+        movement_effects::{MovementSideEffects, SideEffect},
+        Player,
+    },
     ui::notifications::Notification,
 };
 
-use super::tiles::Door;
+use super::tiles::LaserType;
 
 #[derive(Clone, Bundle, LdtkEntity)]
 pub struct PanelBundle {
-    panel: Panel,
+    panel: PressurePlate,
 
     #[from_entity_instance]
     entity_instance: EntityInstance,
@@ -25,13 +28,15 @@ pub struct PanelBundle {
 }
 
 #[derive(Component, Clone, Default, Debug)]
-pub struct Panel {
-    pub opens_door: Option<Door>,
+pub struct PressurePlate {
+    pub opens_laser: Option<LaserType>,
     forbids_movement: Vec<MovementDirection>,
+    multi_movement: Vec<MovementDirection>,
+    multi_move_values: Vec<i32>,
     active: bool,
 }
 
-impl Panel {
+impl PressurePlate {
     pub fn is_active(&self) -> bool {
         self.active
     }
@@ -39,7 +44,7 @@ impl Panel {
 
 pub fn setup_panel(
     mut commands: Commands,
-    mut panel_q: Query<(Entity, &mut Panel, &EntityInstance, &Transform), Without<Sprite>>,
+    mut panel_q: Query<(Entity, &mut PressurePlate, &EntityInstance, &Transform), Without<Sprite>>,
     sprites: Res<SpriteAssets>,
     aseprites: Res<Assets<Aseprite>>,
     texture_atlases: Res<Assets<TextureAtlas>>,
@@ -57,13 +62,13 @@ pub fn setup_panel(
                 }
             })
             .and_then(|door| match door.as_str() {
-                "Red" => Some(Door::Red),
-                "Green" => Some(Door::Green),
-                "Blue" => Some(Door::Blue),
+                "Red" => Some(LaserType::Red),
+                "Green" => Some(LaserType::Green),
+                "Blue" => Some(LaserType::Blue),
                 _ => None,
             })
         {
-            panel.opens_door = Some(door);
+            panel.opens_laser = Some(door);
         }
         if let Some(forbidden_movement) = entity_instance
             .field_instances
@@ -93,6 +98,56 @@ pub fn setup_panel(
             panel.forbids_movement = forbidden_movement;
         }
 
+        if let Some(multi_movement) = entity_instance
+            .field_instances
+            .iter()
+            .find(|field| field.identifier == "Wasd_Multi_Move")
+            .and_then(|multi_movement| {
+                if let FieldValue::Enums(multi_movements) = multi_movement.value.clone() {
+                    Some(multi_movements)
+                } else {
+                    None
+                }
+            })
+            .map(|forbidden_movements| {
+                forbidden_movements
+                    .iter()
+                    .flatten()
+                    .filter_map(|movement| match movement.as_str() {
+                        "W" => Some(MovementDirection::Up),
+                        "S" => Some(MovementDirection::Down),
+                        "A" => Some(MovementDirection::Left),
+                        "D" => Some(MovementDirection::Right),
+                        _ => None,
+                    })
+                    .collect::<Vec<MovementDirection>>()
+            })
+        {
+            panel.multi_movement = multi_movement;
+        }
+
+        if let Some(multi_move_values) = entity_instance
+            .field_instances
+            .iter()
+            .find(|field| field.identifier == "Multi_Move_Values")
+            .and_then(|multi_move_values| {
+                if let FieldValue::Ints(multi_move_values) = multi_move_values.value.clone() {
+                    Some(multi_move_values)
+                } else {
+                    None
+                }
+            })
+            .map(|multi_move_values| {
+                multi_move_values
+                    .iter()
+                    .flatten()
+                    .copied()
+                    .collect::<Vec<i32>>()
+            })
+        {
+            panel.multi_move_values = multi_move_values;
+        }
+
         if let Some((atlas, sprite)) =
             sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases)
         {
@@ -107,30 +162,30 @@ pub fn setup_panel(
 }
 
 fn sprite_for_panel(
-    panel: &Panel,
+    panel: &PressurePlate,
     panel_aseprite: &Handle<Aseprite>,
     aseprites: &Assets<Aseprite>,
     texture_atlases: &Assets<TextureAtlas>,
 ) -> Option<(Handle<Image>, Sprite)> {
     let Some(panel_aseprite) = aseprites.get(panel_aseprite) else { return None; };
     let Some(atlas) = texture_atlases.get(panel_aseprite.atlas()) else { return None; };
-    let Some(door) = panel.opens_door else { return None; };
+    let Some(door) = panel.opens_laser else { return None; };
     let slice_name = match door {
-        Door::Red => {
+        LaserType::Red => {
             if panel.is_active() {
                 "RedPressed"
             } else {
                 "RedUnpressed"
             }
         }
-        Door::Green => {
+        LaserType::Green => {
             if panel.is_active() {
                 "GreenPressed"
             } else {
                 "GreenUnpressed"
             }
         }
-        Door::Blue => {
+        LaserType::Blue => {
             if panel.is_active() {
                 "BluePressed"
             } else {
@@ -158,10 +213,13 @@ fn sprite_for_panel(
 
 #[allow(clippy::type_complexity)]
 pub fn step_on_panel(
-    mut player_q: Query<(&GridCoords, &mut ForbiddenMovement), (With<Player>, Changed<GridCoords>)>,
+    mut player_q: Query<
+        (&GridCoords, &mut MovementSideEffects),
+        (With<Player>, Changed<GridCoords>),
+    >,
     mut panel_q: Query<(
         &GridCoords,
-        &mut Panel,
+        &mut PressurePlate,
         Option<&mut Handle<Image>>,
         Option<&mut Sprite>,
     )>,
@@ -189,7 +247,13 @@ pub fn step_on_panel(
                     }
                 }
                 for movement in panel.forbids_movement.iter() {
-                    forbidden_movement.forbidden.insert(*movement);
+                    forbidden_movement.set(*movement, SideEffect::DisabledMovement);
+                }
+                for i in 0..min(panel.multi_movement.len(), panel.multi_move_values.len()) {
+                    forbidden_movement.set(
+                        panel.multi_movement[i],
+                        SideEffect::MultiMove(panel.multi_move_values[i] as u32),
+                    );
                 }
             }
         }
