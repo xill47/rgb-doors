@@ -228,6 +228,8 @@ pub fn level_transition(
             for finish in finish_q.iter() {
                 if let Some(next_level) = &finish.next_level {
                     *level_selection = next_level.clone();
+                    // reset_level_event.send(ResetLevelEvent);
+                    info!("Next level: {:?}", level_selection);
                 }
             }
             for (entity, &background_color) in screen_q.iter_mut() {

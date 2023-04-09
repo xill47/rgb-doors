@@ -231,10 +231,18 @@ pub fn step_on_panel(
     for (panel_coord, mut panel, mut image, mut sprite) in panel_q.iter_mut() {
         for (player_coords, mut forbidden_movement) in player_q.iter_mut() {
             if panel_coord == player_coords {
-                notify.send(Notification {
-                    text: "You stepped on a panel!".into(),
-                    duration: Duration::from_secs(2),
-                });
+                if let Some(laser) = panel.opens_laser {
+                    notify.send(Notification {
+                        text: format!("{} laser deactivated!", laser),
+                        duration: Duration::from_secs_f32(1.2),
+                    });
+                }
+                if !panel.forbids_movement.is_empty() || !panel.multi_movement.is_empty() {
+                    notify.send(Notification {
+                        text: "You feel like something has changed...".to_owned(),
+                        duration: Duration::from_secs(2),
+                    });
+                }
                 panel.active = true;
                 if let Some((atlas, new_sprite)) =
                     sprite_for_panel(&panel, &sprites.plates, &aseprites, &texture_atlases)

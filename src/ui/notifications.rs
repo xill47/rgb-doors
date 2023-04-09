@@ -56,7 +56,7 @@ pub fn add_notifications_ui(child_builder: &mut ChildBuilder, text_style: &TextS
                 align_items: AlignItems::Center,
                 ..default()
             },
-            background_color: BackgroundColor(Color::rgba(0.1, 0.1, 0.1, 0.5)),
+            background_color: BackgroundColor(Color::rgba(0.0, 0.0, 0.0, 0.5)),
             ..default()
         })
         .with_children(|parent| {

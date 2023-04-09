@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use bevy::prelude::{Bundle, Component};
 use bevy_ecs_ldtk::{
     prelude::{LayerInstance, LdtkIntCell},
@@ -41,6 +43,16 @@ pub enum LaserType {
     Red,
     Green,
     Blue,
+}
+
+impl Display for LaserType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LaserType::Red => write!(f, "Red"),
+            LaserType::Green => write!(f, "Green"),
+            LaserType::Blue => write!(f, "Blue"),
+        }
+    }
 }
 
 #[derive(Bundle)]
