@@ -35,10 +35,10 @@ pub fn spawn_lasers(
 ) {
     for (entity, entity_instance, mut laser_sprite, mut transform) in laser_query.iter_mut() {
         // get aseprite type by entity instance enum
-        if let Some(aseprite_bundle) =
+        if let Some((aseprite_bundle, y_offset)) =
             laser_aseprite_bundle(entity_instance, &mut laser_sprite, &sprites, &aseprites)
         {
-            transform.translation.y += 8.0;
+            transform.translation.y += y_offset;
             commands.entity(entity).insert(aseprite_bundle);
         }
     }
@@ -49,7 +49,7 @@ fn laser_aseprite_bundle(
     laser_sprite: &mut LaserSprite,
     sprites: &SpriteAssets,
     aseprites: &Assets<Aseprite>,
-) -> Option<RgbEntityAsepriteBundle> {
+) -> Option<(RgbEntityAsepriteBundle, f32)> {
     let axis_field = entity_instance
         .field_instances
         .iter()
@@ -61,6 +61,11 @@ fn laser_aseprite_bundle(
     let sprite = match axis_value.as_str() {
         "Horizontal" => sprites.h_lasers.clone_weak().into(),
         "Vertical" => sprites.v_lasers.clone_weak().into(),
+        _ => None,
+    }?;
+    let y_offset = match axis_value.as_str() {
+        "Horizontal" => Some(0.),
+        "Vertical" => Some(8.),
         _ => None,
     }?;
     let color_field = entity_instance
@@ -86,13 +91,16 @@ fn laser_aseprite_bundle(
     *laser_sprite = actual_laser_sprite;
     let aseprite = aseprites.get(&sprite)?;
     let laser_animation = AsepriteAnimation::new(aseprite.info(), tag_name);
-    RgbEntityAsepriteBundle {
-        texture_atlas: aseprite.atlas().clone_weak(),
-        sprite: TextureAtlasSprite::new(laser_animation.current_frame()),
-        aseprite: sprite,
-        animation: laser_animation,
-    }
-    .into()
+    (
+        RgbEntityAsepriteBundle {
+            texture_atlas: aseprite.atlas().clone_weak(),
+            sprite: TextureAtlasSprite::new(laser_animation.current_frame()),
+            aseprite: sprite,
+            animation: laser_animation,
+        },
+        y_offset,
+    )
+        .into()
 }
 
 #[allow(clippy::type_complexity)]
