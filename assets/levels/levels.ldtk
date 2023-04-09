@@ -613,10 +613,39 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [{ "__identifier": "Notifications", "__value": ["Hello!"], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [{
-				"id": "V_String",
-				"params": ["Hello!"]
-			}] }],
+			"fieldInstances": [{ "__identifier": "Notifications", "__value": [
+				"Hello!",
+				"Your goal is to reach the elevator (on the right)",
+				"Press WASD to move",
+				"Beware the lasers",
+				"There're buttons that deactivate some lasers",
+				"One is on your screen (keybind: SPACE)"
+			], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [
+				{
+					"id": "V_String",
+					"params": ["Hello!"]
+				},
+				{
+					"id": "V_String",
+					"params": ["Your goal is to reach the elevator (on the right)"]
+				},
+				{
+					"id": "V_String",
+					"params": ["Press WASD to move"]
+				},
+				{
+					"id": "V_String",
+					"params": ["Beware the lasers"]
+				},
+				{
+					"id": "V_String",
+					"params": ["There're buttons that deactivate some lasers"]
+				},
+				{
+					"id": "V_String",
+					"params": ["One is on your screen (keybind: SPACE)"]
+				}
+			] }],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",
@@ -763,13 +792,13 @@
 							"defUid": 35,
 							"px": [112,32],
 							"fieldInstances": [
-								{ "__identifier": "Message", "__value": "Gz!", "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [{
+								{ "__identifier": "Message", "__value": "Congratulations!", "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["Gz!"]
+									"params": ["Congratulations!"]
 								}] },
-								{ "__identifier": "NextLevel", "__value": "ef5f77e0-c640-11ed-af28-4fc5a0712e8a", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
+								{ "__identifier": "NextLevel", "__value": "d2c047a0-c640-11ed-8d21-a5a216f8c89d", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["ef5f77e0-c640-11ed-af28-4fc5a0712e8a"]
+									"params": ["d2c047a0-c640-11ed-8d21-a5a216f8c89d"]
 								}] }
 							]
 						}
@@ -912,7 +941,13 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [{ "__identifier": "Notifications", "__value": [], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [] }],
+			"fieldInstances": [{ "__identifier": "Notifications", "__value": [ "Press R if you are stuck", "Be aware that buttons have side effects" ], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [ {
+				"id": "V_String",
+				"params": ["Press R if you are stuck"]
+			}, {
+				"id": "V_String",
+				"params": ["Be aware that buttons have side effects"]
+			} ] }],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",
@@ -1013,9 +1048,9 @@
 							"defUid": 24,
 							"px": [32,32],
 							"fieldInstances": [
-								{ "__identifier": "Door", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 26, "realEditorValues": [{
+								{ "__identifier": "Door", "__value": "Blue", "__type": "LocalEnum.Door", "__tile": null, "defUid": 26, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["Red"]
+									"params": ["Blue"]
 								}] },
 								{ "__identifier": "Wasd_Disable", "__value": ["W"], "__type": "Array<LocalEnum.Wasd>", "__tile": null, "defUid": 28, "realEditorValues": [{
 									"id": "V_String",
@@ -1085,9 +1120,9 @@
 							"px": [112,96],
 							"fieldInstances": [
 								{ "__identifier": "Message", "__value": null, "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [] },
-								{ "__identifier": "NextLevel", "__value": "ea115fb0-c640-11ed-ad57-f75cc1888480", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
+								{ "__identifier": "NextLevel", "__value": "ef5f77e0-c640-11ed-af28-4fc5a0712e8a", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["ea115fb0-c640-11ed-ad57-f75cc1888480"]
+									"params": ["ef5f77e0-c640-11ed-af28-4fc5a0712e8a"]
 								}] }
 							]
 						},
@@ -1260,8 +1295,8 @@
 						{ "px": [48,64], "src": [288,144], "f": 0, "t": 360, "d": [39] },
 						{ "px": [16,80], "src": [0,48], "f": 0, "t": 114, "d": [46] },
 						{ "px": [32,80], "src": [272,128], "f": 0, "t": 321, "d": [47] },
-						{ "px": [48,80], "src": [240,176], "f": 0, "t": 433, "d": [48] },
-						{ "px": [64,80], "src": [160,144], "f": 0, "t": 352, "d": [49] },
+						{ "px": [48,80], "src": [240,112], "f": 0, "t": 281, "d": [48] },
+						{ "px": [64,80], "src": [288,96], "f": 0, "t": 246, "d": [49] },
 						{ "px": [80,80], "src": [272,96], "f": 0, "t": 245, "d": [50] },
 						{ "px": [96,80], "src": [304,96], "f": 0, "t": 247, "d": [51] },
 						{ "px": [16,96], "src": [0,64], "f": 0, "t": 152, "d": [55] },
@@ -1277,17 +1312,17 @@
 			"__neighbours": []
 		},
 		{
-			"identifier": "Level_3",
+			"identifier": "Level_2",
 			"iid": "ea115fb0-c640-11ed-ad57-f75cc1888480",
 			"uid": 45,
-			"worldX": 496,
-			"worldY": 32,
+			"worldX": 512,
+			"worldY": 48,
 			"worldDepth": 0,
-			"pxWid": 240,
-			"pxHei": 96,
+			"pxWid": 208,
+			"pxHei": 64,
 			"__bgColor": "#696A79",
 			"bgColor": null,
-			"useAutoIdentifier": false,
+			"useAutoIdentifier": true,
 			"bgRelPath": null,
 			"bgPos": null,
 			"bgPivotX": 0.5,
@@ -1295,13 +1330,16 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [{ "__identifier": "Notifications", "__value": [], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [] }],
+			"fieldInstances": [{ "__identifier": "Notifications", "__value": ["You can switch lasers while you move"], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [{
+				"id": "V_String",
+				"params": ["You can switch lasers while you move"]
+			}] }],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",
 					"__type": "Entities",
-					"__cWid": 15,
-					"__cHei": 6,
+					"__cWid": 13,
+					"__cHei": 4,
 					"__gridSize": 16,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
@@ -1323,7 +1361,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "Player",
-							"__grid": [2,3],
+							"__grid": [1,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1332,12 +1370,12 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 9,
-							"px": [32,48],
+							"px": [16,32],
 							"fieldInstances": []
 						},
 						{
 							"__identifier": "Finish",
-							"__grid": [12,3],
+							"__grid": [11,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1346,18 +1384,15 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 35,
-							"px": [192,48],
+							"px": [176,32],
 							"fieldInstances": [
 								{ "__identifier": "Message", "__value": null, "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [] },
-								{ "__identifier": "NextLevel", "__value": "c190d670-c640-11ed-b3e8-bdd10a92bb2d", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["c190d670-c640-11ed-b3e8-bdd10a92bb2d"]
-								}] }
+								{ "__identifier": "NextLevel", "__value": null, "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [null] }
 							]
 						},
 						{
 							"__identifier": "Laser",
-							"__grid": [4,3],
+							"__grid": [3,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1366,7 +1401,7 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 30,
-							"px": [64,48],
+							"px": [48,32],
 							"fieldInstances": [
 								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
@@ -1380,7 +1415,7 @@
 						},
 						{
 							"__identifier": "Laser",
-							"__grid": [6,3],
+							"__grid": [5,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1389,7 +1424,7 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 30,
-							"px": [96,48],
+							"px": [80,32],
 							"fieldInstances": [
 								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
@@ -1403,7 +1438,7 @@
 						},
 						{
 							"__identifier": "Laser",
-							"__grid": [8,3],
+							"__grid": [7,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1412,7 +1447,7 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 30,
-							"px": [128,48],
+							"px": [112,32],
 							"fieldInstances": [
 								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
@@ -1426,7 +1461,7 @@
 						},
 						{
 							"__identifier": "Laser",
-							"__grid": [10,3],
+							"__grid": [9,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1435,7 +1470,7 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 30,
-							"px": [160,48],
+							"px": [144,32],
 							"fieldInstances": [
 								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
@@ -1449,7 +1484,7 @@
 						},
 						{
 							"__identifier": "Panel",
-							"__grid": [3,3],
+							"__grid": [2,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1458,7 +1493,7 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 24,
-							"px": [48,48],
+							"px": [32,32],
 							"fieldInstances": [
 								{ "__identifier": "Door", "__value": "Green", "__type": "LocalEnum.Door", "__tile": null, "defUid": 26, "realEditorValues": [{
 									"id": "V_String",
@@ -1477,8 +1512,8 @@
 				{
 					"__identifier": "IntGrid",
 					"__type": "IntGrid",
-					"__cWid": 15,
-					"__cHei": 6,
+					"__cWid": 13,
+					"__cHei": 4,
 					"__gridSize": 16,
 					"__opacity": 0.8,
 					"__pxTotalOffsetX": 0,
@@ -1493,9 +1528,58 @@
 					"visible": true,
 					"optionalRules": [],
 					"intGridCsv": [
-						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1,1,1,1,
-						1,1,1,1,1,1,1,1,1,2,2,1,2,2,3,2,5,2,3,2,5,2,2,1,2,2,1,1,1,1,1,1,1,1,1,
-						1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						2,
+						2,
+						3,
+						2,
+						5,
+						2,
+						3,
+						2,
+						5,
+						2,
+						2,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1,
+						1
 					],
 					"autoLayerTiles": [],
 					"seed": 371757,
@@ -1506,8 +1590,8 @@
 				{
 					"__identifier": "Tiles",
 					"__type": "Tiles",
-					"__cWid": 15,
-					"__cHei": 6,
+					"__cWid": 13,
+					"__cHei": 4,
 					"__gridSize": 16,
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
@@ -1526,26 +1610,26 @@
 					"seed": 1722416,
 					"overrideTilesetUid": null,
 					"gridTiles": [
-						{ "px": [32,32], "src": [16,144], "f": 0, "t": 343, "d": [32] },
-						{ "px": [48,32], "src": [16,48], "f": 0, "t": 115, "d": [33] },
-						{ "px": [64,32], "src": [16,192], "f": 0, "t": 457, "d": [34] },
-						{ "px": [80,32], "src": [48,48], "f": 0, "t": 117, "d": [35] },
-						{ "px": [96,32], "src": [48,192], "f": 0, "t": 459, "d": [36] },
-						{ "px": [112,32], "src": [48,48], "f": 0, "t": 117, "d": [37] },
-						{ "px": [128,32], "src": [16,192], "f": 0, "t": 457, "d": [38] },
-						{ "px": [144,32], "src": [48,48], "f": 0, "t": 117, "d": [39] },
-						{ "px": [160,32], "src": [48,192], "f": 0, "t": 459, "d": [40] },
-						{ "px": [176,32], "src": [48,48], "f": 0, "t": 117, "d": [41] },
-						{ "px": [32,48], "src": [16,160], "f": 0, "t": 381, "d": [47] },
-						{ "px": [48,48], "src": [16,64], "f": 0, "t": 153, "d": [48] },
-						{ "px": [64,48], "src": [32,64], "f": 0, "t": 154, "d": [49] },
-						{ "px": [80,48], "src": [48,64], "f": 0, "t": 155, "d": [50] },
-						{ "px": [96,48], "src": [64,64], "f": 0, "t": 156, "d": [51] },
-						{ "px": [112,48], "src": [48,64], "f": 0, "t": 155, "d": [52] },
-						{ "px": [128,48], "src": [96,64], "f": 0, "t": 158, "d": [53] },
-						{ "px": [144,48], "src": [48,64], "f": 0, "t": 155, "d": [54] },
-						{ "px": [160,48], "src": [128,64], "f": 0, "t": 160, "d": [55] },
-						{ "px": [176,48], "src": [48,64], "f": 0, "t": 155, "d": [56] }
+						{ "px": [16,16], "src": [16,144], "f": 0, "t": 343, "d": [14] },
+						{ "px": [32,16], "src": [16,48], "f": 0, "t": 115, "d": [15] },
+						{ "px": [48,16], "src": [16,192], "f": 0, "t": 457, "d": [16] },
+						{ "px": [64,16], "src": [48,48], "f": 0, "t": 117, "d": [17] },
+						{ "px": [80,16], "src": [48,192], "f": 0, "t": 459, "d": [18] },
+						{ "px": [96,16], "src": [48,48], "f": 0, "t": 117, "d": [19] },
+						{ "px": [112,16], "src": [16,192], "f": 0, "t": 457, "d": [20] },
+						{ "px": [128,16], "src": [48,48], "f": 0, "t": 117, "d": [21] },
+						{ "px": [144,16], "src": [48,192], "f": 0, "t": 459, "d": [22] },
+						{ "px": [160,16], "src": [48,48], "f": 0, "t": 117, "d": [23] },
+						{ "px": [16,32], "src": [16,160], "f": 0, "t": 381, "d": [27] },
+						{ "px": [32,32], "src": [16,64], "f": 0, "t": 153, "d": [28] },
+						{ "px": [48,32], "src": [32,64], "f": 0, "t": 154, "d": [29] },
+						{ "px": [64,32], "src": [48,64], "f": 0, "t": 155, "d": [30] },
+						{ "px": [80,32], "src": [64,64], "f": 0, "t": 156, "d": [31] },
+						{ "px": [96,32], "src": [48,64], "f": 0, "t": 155, "d": [32] },
+						{ "px": [112,32], "src": [96,64], "f": 0, "t": 158, "d": [33] },
+						{ "px": [128,32], "src": [48,64], "f": 0, "t": 155, "d": [34] },
+						{ "px": [144,32], "src": [128,64], "f": 0, "t": 160, "d": [35] },
+						{ "px": [160,32], "src": [48,64], "f": 0, "t": 155, "d": [36] }
 					],
 					"entityInstances": []
 				}
@@ -1553,7 +1637,7 @@
 			"__neighbours": []
 		},
 		{
-			"identifier": "Level_4",
+			"identifier": "Level_3",
 			"iid": "ef5f77e0-c640-11ed-af28-4fc5a0712e8a",
 			"uid": 46,
 			"worldX": 320,
@@ -1571,7 +1655,10 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [{ "__identifier": "Notifications", "__value": [], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [] }],
+			"fieldInstances": [{ "__identifier": "Notifications", "__value": ["You can become faster..."], "__type": "Array<String>", "__tile": null, "defUid": 29, "realEditorValues": [{
+				"id": "V_String",
+				"params": ["You can become faster..."]
+			}] }],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",
@@ -1610,23 +1697,6 @@
 							"defUid": 9,
 							"px": [16,128],
 							"fieldInstances": []
-						},
-						{
-							"__identifier": "Finish",
-							"__grid": [7,8],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FF0042",
-							"iid": "9c9e8da0-c640-11ed-af28-5f1c686559db",
-							"width": 16,
-							"height": 16,
-							"defUid": 35,
-							"px": [112,128],
-							"fieldInstances": [
-								{ "__identifier": "Message", "__value": null, "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [] },
-								{ "__identifier": "NextLevel", "__value": null, "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [] }
-							]
 						},
 						{
 							"__identifier": "Laser",
@@ -1693,9 +1763,9 @@
 									"id": "V_String",
 									"params": ["Vertical"]
 								}] },
-								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+								{ "__identifier": "Color", "__value": "Blue", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["Red"]
+									"params": ["Blue"]
 								}] }
 							]
 						},
@@ -1716,9 +1786,9 @@
 									"id": "V_String",
 									"params": ["Horizontal"]
 								}] },
-								{ "__identifier": "Color", "__value": "Blue", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["Blue"]
+									"params": ["Red"]
 								}] }
 							]
 						},
@@ -1739,9 +1809,9 @@
 									"id": "V_String",
 									"params": ["Horizontal"]
 								}] },
-								{ "__identifier": "Color", "__value": "Blue", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["Blue"]
+									"params": ["Red"]
 								}] }
 							]
 						},
@@ -1800,6 +1870,26 @@
 								}] },
 								{ "__identifier": "Multi_Move_Values", "__value": [3], "__type": "Array<Int>", "__tile": null, "defUid": 43, "realEditorValues": [{ "id": "V_Int", "params": [3] }] }
 							]
+						},
+						{
+							"__identifier": "Finish",
+							"__grid": [7,8],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FF0042",
+							"iid": "8454e710-c640-11ed-9b8b-c995b71d6a43",
+							"width": 16,
+							"height": 16,
+							"defUid": 35,
+							"px": [112,128],
+							"fieldInstances": [
+								{ "__identifier": "Message", "__value": null, "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [] },
+								{ "__identifier": "NextLevel", "__value": "ea115fb0-c640-11ed-ad57-f75cc1888480", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["ea115fb0-c640-11ed-ad57-f75cc1888480"]
+								}] }
+							]
 						}
 					]
 				},
@@ -1822,11 +1912,11 @@
 					"visible": true,
 					"optionalRules": [],
 					"intGridCsv": [
-						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
-						1,0,0,0,0,1,0,2,2,2,2,0,2,1,0,0,0,0,1,1,5,1,1,1,2,2,1,0,0,0,0,0,1,2,1,
-						1,1,1,5,1,0,0,0,1,1,1,2,4,2,3,2,0,1,0,0,0,1,1,1,2,1,2,1,1,2,1,0,0,0,1,
-						2,2,2,1,2,2,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-						0,0,0
+						1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,3,1,1,1,2,2,1,1,1,1,1,1,1,2,1,
+						1,1,1,3,1,1,1,1,1,1,1,2,4,2,5,2,2,1,1,1,1,1,1,1,2,1,2,1,1,2,1,1,1,1,1,
+						2,2,2,1,2,2,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+						1,1,1
 					],
 					"autoLayerTiles": [],
 					"seed": 2591217,
@@ -1873,15 +1963,15 @@
 						{ "px": [96,48], "src": [48,64], "f": 0, "t": 155, "d": [45] },
 						{ "px": [112,48], "src": [64,64], "f": 0, "t": 156, "d": [46] },
 						{ "px": [128,48], "src": [192,128], "f": 0, "t": 316, "d": [47] },
-						{ "px": [48,64], "src": [240,80], "f": 0, "t": 205, "d": [55] },
+						{ "px": [48,64], "src": [240,112], "f": 0, "t": 281, "d": [55] },
 						{ "px": [112,64], "src": [144,160], "f": 0, "t": 389, "d": [59] },
 						{ "px": [128,64], "src": [288,144], "f": 0, "t": 360, "d": [60] },
 						{ "px": [48,80], "src": [304,128], "f": 0, "t": 323, "d": [68] },
 						{ "px": [64,80], "src": [288,96], "f": 0, "t": 246, "d": [69] },
 						{ "px": [80,80], "src": [64,48], "f": 0, "t": 118, "d": [70] },
-						{ "px": [96,80], "src": [272,96], "f": 0, "t": 245, "d": [71] },
+						{ "px": [96,80], "src": [304,96], "f": 0, "t": 247, "d": [71] },
 						{ "px": [112,80], "src": [176,144], "f": 0, "t": 353, "d": [72] },
-						{ "px": [128,80], "src": [240,144], "f": 0, "t": 357, "d": [73] },
+						{ "px": [128,80], "src": [240,112], "f": 0, "t": 281, "d": [73] },
 						{ "px": [48,96], "src": [304,144], "f": 0, "t": 361, "d": [81] },
 						{ "px": [64,96], "src": [240,32], "f": 0, "t": 91, "d": [82] },
 						{ "px": [80,96], "src": [64,64], "f": 0, "t": 156, "d": [83] },
