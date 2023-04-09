@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version - in the form of v1.2.3'
+        description: "Version - in the form of v1.2.3"
         required: true
         type: string
 
@@ -123,6 +123,7 @@ jobs:
     needs: get-version
     env:
       VERSION: ${{needs.get-version.outputs.version}}
+      BUILD_INSTALLER: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -132,6 +133,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Install dotnet
+        if: ${{ env.BUILD_INSTALLER }}
         uses: actions/setup-dotnet@v3
         with:
           global-json-file: build/windows/installer/global.json
@@ -148,6 +150,7 @@ jobs:
           files: target/release/assets/ target/release/credits/ target/release/${{ env.GAME_EXECUTABLE_NAME }}.exe
           dest: ${{ env.GAME_EXECUTABLE_NAME }}_windows.zip
       - name: Create Installer
+        if: ${{ env.BUILD_INSTALLER }}
         run: dotnet build -c Release build/windows/installer/Installer.wixproj --output installer
       - name: Upload release
         uses: svenstaro/upload-release-action@v2
@@ -158,13 +161,14 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
       - name: Upload installer
+        if: ${{ env.BUILD_INSTALLER }}
         uses: svenstaro/upload-release-action@v2
         with:
-         repo_token: ${{ secrets.GITHUB_TOKEN }}
-         file: installer/en-US/installer.msi
-         asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ steps.tag.outputs.tag }}_windows.msi
-         release_name: ${{ env.VERSION }}
-         overwrite: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: installer/en-US/installer.msi
+          asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ steps.tag.outputs.tag }}_windows.msi
+          release_name: ${{ env.VERSION }}
+          overwrite: true
 
   build-web:
     runs-on: ubuntu-latest
