@@ -1402,6 +1402,52 @@
 							]
 						},
 						{
+							"__identifier": "Laser",
+							"__grid": [8,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "089a9aa0-c640-11ed-ad57-5fa350491e98",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [128,48],
+							"fieldInstances": [
+								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Vertical"]
+								}] },
+								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Red"]
+								}] }
+							]
+						},
+						{
+							"__identifier": "Laser",
+							"__grid": [10,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#2CE8F5",
+							"iid": "0a3f9810-c640-11ed-ad57-69a5546d1cec",
+							"width": 16,
+							"height": 16,
+							"defUid": 30,
+							"px": [160,48],
+							"fieldInstances": [
+								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Vertical"]
+								}] },
+								{ "__identifier": "Color", "__value": "Blue", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Blue"]
+								}] }
+							]
+						},
+						{
 							"__identifier": "Panel",
 							"__grid": [3,3],
 							"__pivot": [0,0],
@@ -1424,29 +1470,6 @@
 									"params": ["D"]
 								}] },
 								{ "__identifier": "Multi_Move_Values", "__value": [8], "__type": "Array<Int>", "__tile": null, "defUid": 43, "realEditorValues": [{ "id": "V_Int", "params": [8] }] }
-							]
-						},
-						{
-							"__identifier": "Laser",
-							"__grid": [10,3],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#2CE8F5",
-							"iid": "5556b520-c640-11ed-ad57-813c19c846cd",
-							"width": 16,
-							"height": 16,
-							"defUid": 30,
-							"px": [160,48],
-							"fieldInstances": [
-								{ "__identifier": "Axis", "__value": "Vertical", "__type": "LocalEnum.Axis", "__tile": null, "defUid": 33, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["Vertical"]
-								}] },
-								{ "__identifier": "Color", "__value": "Red", "__type": "LocalEnum.Door", "__tile": null, "defUid": 34, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["Red"]
-								}] }
 							]
 						}
 					]
@@ -1471,7 +1494,7 @@
 					"optionalRules": [],
 					"intGridCsv": [
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1,1,1,1,
-						1,1,1,1,1,1,1,1,1,2,2,1,2,2,3,2,5,2,2,2,3,2,2,1,2,2,1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,2,2,1,2,2,3,2,5,2,3,2,5,2,2,1,2,2,1,1,1,1,1,1,1,1,1,
 						1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 					],
 					"autoLayerTiles": [],
@@ -1509,9 +1532,9 @@
 						{ "px": [80,32], "src": [48,48], "f": 0, "t": 117, "d": [35] },
 						{ "px": [96,32], "src": [48,192], "f": 0, "t": 459, "d": [36] },
 						{ "px": [112,32], "src": [48,48], "f": 0, "t": 117, "d": [37] },
-						{ "px": [128,32], "src": [64,48], "f": 0, "t": 118, "d": [38] },
-						{ "px": [144,32], "src": [64,48], "f": 0, "t": 118, "d": [39] },
-						{ "px": [160,32], "src": [16,192], "f": 0, "t": 457, "d": [40] },
+						{ "px": [128,32], "src": [16,192], "f": 0, "t": 457, "d": [38] },
+						{ "px": [144,32], "src": [48,48], "f": 0, "t": 117, "d": [39] },
+						{ "px": [160,32], "src": [48,192], "f": 0, "t": 459, "d": [40] },
 						{ "px": [176,32], "src": [48,48], "f": 0, "t": 117, "d": [41] },
 						{ "px": [32,48], "src": [16,160], "f": 0, "t": 381, "d": [47] },
 						{ "px": [48,48], "src": [16,64], "f": 0, "t": 153, "d": [48] },
@@ -1519,8 +1542,8 @@
 						{ "px": [80,48], "src": [48,64], "f": 0, "t": 155, "d": [50] },
 						{ "px": [96,48], "src": [64,64], "f": 0, "t": 156, "d": [51] },
 						{ "px": [112,48], "src": [48,64], "f": 0, "t": 155, "d": [52] },
-						{ "px": [128,48], "src": [32,64], "f": 0, "t": 154, "d": [53] },
-						{ "px": [144,48], "src": [32,64], "f": 0, "t": 154, "d": [54] },
+						{ "px": [128,48], "src": [96,64], "f": 0, "t": 158, "d": [53] },
+						{ "px": [144,48], "src": [48,64], "f": 0, "t": 155, "d": [54] },
 						{ "px": [160,48], "src": [128,64], "f": 0, "t": 160, "d": [55] },
 						{ "px": [176,48], "src": [48,64], "f": 0, "t": 155, "d": [56] }
 					],
@@ -1533,8 +1556,8 @@
 			"identifier": "Level_4",
 			"iid": "ef5f77e0-c640-11ed-af28-4fc5a0712e8a",
 			"uid": 46,
-			"worldX": 272,
-			"worldY": 240,
+			"worldX": 320,
+			"worldY": 192,
 			"worldDepth": 0,
 			"pxWid": 208,
 			"pxHei": 176,
@@ -1800,9 +1823,9 @@
 					"optionalRules": [],
 					"intGridCsv": [
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
-						1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,1,5,1,1,1,0,0,1,0,0,0,0,0,1,0,1,
-						1,1,1,5,1,0,0,0,1,1,1,0,4,0,3,0,0,1,0,0,0,1,0,0,0,1,0,0,1,2,1,0,0,0,1,
-						0,0,0,1,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+						1,0,0,0,0,1,0,2,2,2,2,0,2,1,0,0,0,0,1,1,5,1,1,1,2,2,1,0,0,0,0,0,1,2,1,
+						1,1,1,5,1,0,0,0,1,1,1,2,4,2,3,2,0,1,0,0,0,1,1,1,2,1,2,1,1,2,1,0,0,0,1,
+						2,2,2,1,2,2,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 						0,0,0
 					],
 					"autoLayerTiles": [],
