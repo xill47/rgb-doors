@@ -76,14 +76,36 @@ impl MovementState {
         }
     }
 
-    pub fn next_coords(&self, coords: &GridCoords) -> GridCoords {
+    pub fn apply_movement(
+        &mut self,
+        coords: &mut GridCoords,
+        tile_storage_q: &Query<(&TileStorage, &Name)>,
+        tiles_q: &Query<Option<&Wall>>,
+    ) {
         match self {
-            MovementState::Idle => *coords,
+            MovementState::Idle => {}
             MovementState::Moving(direction) | MovementState::MultiMoving { direction, .. } => {
                 let direction = direction.as_ivec2();
-                GridCoords {
+                let next_grid_coords = GridCoords {
                     x: coords.x + direction.x,
                     y: coords.y + direction.y,
+                };
+                let is_wall = tile_storage_q
+                    .iter()
+                    .find(|(_, name)| name.as_str() == "IntGrid")
+                    .and_then(|(tile_storage, _)| tile_storage.get(&next_grid_coords.into()))
+                    .map(|tile| {
+                        tiles_q
+                            .get(tile)
+                            .map(|tile| tile.is_some())
+                            .unwrap_or(false)
+                    })
+                    .unwrap_or(false);
+
+                if is_wall {
+                    *self = MovementState::Idle;
+                } else {
+                    *coords = next_grid_coords;
                 }
             }
         }
@@ -108,11 +130,6 @@ pub fn player_action_to_movement(
     tile_storage_q: Query<(&TileStorage, &Name)>,
     tiles_q: Query<Option<&Wall>>,
 ) {
-    let Some(int_grid_tiles) = tile_storage_q
-        .iter()
-        .find(|(_, name)| name.as_str() == "IntGrid")
-        .map(|(tile_storage, _)| tile_storage)
-        else { return; };
     for actions in actions.iter() {
         if let Some(player_movement) = &actions.player_movement {
             for (side_effects, mut movement_state, mut coords) in player_query.iter_mut() {
@@ -124,21 +141,7 @@ pub fn player_action_to_movement(
                     .get(*player_movement)
                     .transform_movement_state(default_movement);
 
-                let next_coords = movement_state.next_coords(coords.as_ref());
-                let is_wall = int_grid_tiles
-                    .get(&next_coords.into())
-                    .map(|tile| {
-                        tiles_q
-                            .get(tile)
-                            .map(|tile| tile.is_some())
-                            .unwrap_or(false)
-                    })
-                    .unwrap_or(false);
-                if is_wall {
-                    *movement_state = MovementState::Idle;
-                } else {
-                    *coords = next_coords;
-                }
+                movement_state.apply_movement(&mut coords, &tile_storage_q, &tiles_q);
             }
         }
     }
@@ -199,15 +202,7 @@ pub fn next_movement_state(
                 MovementState::Moving(_) => MovementState::Idle,
                 MovementState::MultiMoving { direction, left } => {
                     if left > 1 {
-                        let next_grid_coords = GridCoords {
-                            x: grid_coords.x + direction.as_ivec2().x,
-                            y: grid_coords.y + direction.as_ivec2().y,
-                        };
-                        let is_wall = is_wall(next_grid_coords, &tile_storage_q, &tiles_q);
-                        info!("is {:?} a wall: {}", next_grid_coords, is_wall);
-                        if !is_wall {
-                            *grid_coords = next_grid_coords;
-                        }
+                        movement_state.apply_movement(&mut grid_coords, &tile_storage_q, &tiles_q);
                     }
                     match left {
                         2.. => MovementState::MultiMoving {
@@ -220,22 +215,4 @@ pub fn next_movement_state(
             };
         }
     }
-}
-
-fn is_wall(
-    next_grid_coords: GridCoords,
-    tile_storage_q: &Query<(&TileStorage, &Name)>,
-    tiles_q: &Query<Option<&Wall>>,
-) -> bool {
-    tile_storage_q
-        .iter()
-        .find(|(_, name)| name.as_str() == "IntGrid")
-        .and_then(|(tile_storage, _)| tile_storage.get(&next_grid_coords.into()))
-        .map(|tile| {
-            tiles_q
-                .get(tile)
-                .map(|tile| tile.is_some())
-                .unwrap_or(false)
-        })
-        .unwrap_or(false)
 }
