@@ -2,6 +2,8 @@ use bevy::prelude::{ChildBuilder, *};
 
 use crate::player::color_control::ColorControl;
 
+use super::buttons_styles::BUTTON_DEFAULT_BG_COLOR;
+
 #[derive(Component)]
 pub struct ColorControlView;
 
@@ -15,7 +17,7 @@ pub fn add_color_control(parent: &mut ChildBuilder, text_style: &TextStyle) {
                 align_items: AlignItems::Center,
                 ..default()
             },
-            background_color: Color::rgb(0.15, 0.15, 0.15).into(),
+            background_color: BUTTON_DEFAULT_BG_COLOR.into(),
             ..default()
         })
         .insert(ColorControlView)
@@ -23,7 +25,7 @@ pub fn add_color_control(parent: &mut ChildBuilder, text_style: &TextStyle) {
             parent.spawn(TextBundle::from_section(
                 "",
                 TextStyle {
-                    color: Color::rgb(0.1, 0.9, 0.1),
+                    color: Color::rgb_u8(21, 18, 23),
                     ..text_style.clone()
                 },
             ));

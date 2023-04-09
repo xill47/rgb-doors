@@ -52,7 +52,7 @@ pub struct RootUI;
 pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
     let text_style = TextStyle {
         font: font_assets.fira_sans.clone_weak(),
-        color: Color::rgb(0.3, 0.3, 0.3),
+        color: Color::rgb_u8(21, 18, 23),
         font_size: 24.,
     };
     commands
@@ -84,7 +84,7 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                         flex_direction: FlexDirection::Row,
                         ..default()
                     },
-                    background_color: BackgroundColor(Color::rgba(0.1, 0.1, 0.1, 0.5)),
+                    background_color: BackgroundColor(Color::rgba(0.0, 0.0, 0.0, 0.5)),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -104,6 +104,7 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                             {
                                 add_debug_button(parent, &text_style);
                             }
+                            add_mute_button(parent, &text_style);
                         });
                     add_notifications_ui(parent, &text_style);
                     let wasd_size = 42.;
@@ -129,17 +130,11 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                 flex_direction: FlexDirection::Column,
                                 ..default()
                             },
-                            background_color: Color::rgb(0.25, 0.15, 0.15).into(),
+                            background_color: BackgroundColor(Color::rgba(0.0, 0.0, 0.0, 0.5)),
                             ..default()
                         })
                         .with_children(|parent| {
-                            add_wasd(
-                                parent,
-                                &wasd_node_style,
-                                &text_style,
-                                "W",
-                                MovementDirection::Up,
-                            );
+                            add_wasd(parent, &wasd_node_style, &text_style, MovementDirection::Up);
                             parent
                                 .spawn(NodeBundle {
                                     style: Style {
@@ -160,21 +155,18 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                         parent,
                                         &wasd_node_style,
                                         &text_style,
-                                        "A",
                                         MovementDirection::Left,
                                     );
                                     add_wasd(
                                         parent,
                                         &wasd_node_style,
                                         &text_style,
-                                        "S",
                                         MovementDirection::Down,
                                     );
                                     add_wasd(
                                         parent,
                                         &wasd_node_style,
                                         &text_style,
-                                        "D",
                                         MovementDirection::Right,
                                     );
                                 });
@@ -182,4 +174,32 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                 });
         })
         .insert(RootUI);
+}
+
+#[derive(Component)]
+pub struct MuteControl;
+
+fn add_mute_button(parent: &mut ChildBuilder, text_style: &TextStyle) {
+    parent
+        .spawn(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(120.), Val::Px(50.)),
+                margin: UiRect::all(Val::Auto),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            background_color: Color::rgb(0.15, 0.15, 0.15).into(),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Mute",
+                TextStyle {
+                    color: Color::rgb_u8(21, 18, 23),
+                    ..text_style.clone()
+                },
+            ));
+        })
+        .insert(MuteControl);
 }

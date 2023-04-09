@@ -47,7 +47,6 @@ pub fn add_wasd(
     parent: &mut ChildBuilder,
     node_style: &Style,
     text_style: &TextStyle,
-    str: &str,
     movement: MovementDirection,
 ) {
     let wasd = Wasd::from(movement);
@@ -58,9 +57,9 @@ pub fn add_wasd(
             background_color: wasd_bg_color.into(),
             ..default()
         })
-        .insert(wasd)
+        .insert(wasd.clone())
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(str, text_style.clone()));
+            parent.spawn(TextBundle::from_section(wasd.text(), text_style.clone()));
         });
 }
 

@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-pub const BUTTON_DEFAULT_BG_COLOR: Color = Color::rgb(0.15, 0.15, 0.15);
-pub const BUTTON_HOVER_BG_COLOR: Color = Color::rgb(0.25, 0.25, 0.25);
-pub const BUTTON_CLICK_BG_COLOR: Color = Color::rgb(0.35, 0.35, 0.35);
+pub const BUTTON_DEFAULT_BG_COLOR: Color = Color::rgb(131. / 255., 117. / 255., 131. / 255.);
+pub const BUTTON_HOVER_BG_COLOR: Color = Color::rgb(155. / 255., 141. / 255., 152. / 255.);
+pub const BUTTON_CLICK_BG_COLOR: Color = Color::rgb(232. / 255., 219. / 255., 216. / 255.);
 
 pub fn style_button_interactions(
     mut button_query: Query<(&mut BackgroundColor, &Interaction), Changed<Interaction>>,
