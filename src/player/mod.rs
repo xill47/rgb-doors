@@ -47,7 +47,7 @@ impl Plugin for PlayerPlugin {
                 (
                     spawn_player_sprite,
                     player_action_to_movement,
-                    change_transform_based_on_grid,
+                    change_transform_based_on_grid.after(spawn_player_sprite),
                     tween_translations.after(change_transform_based_on_grid),
                     die_on_tile_with_door
                         .after(open_lasers)

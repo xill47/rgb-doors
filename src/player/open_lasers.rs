@@ -13,7 +13,10 @@ pub fn open_lasers(
     mut lasers_q: Query<&mut Laser>,
 ) {
     for mut laser in lasers_q.iter_mut() {
-        laser.is_open = is_open(laser.laser_type, &pressure_plates_q, &color_control_q);
+        let is_open = is_open(laser.laser_type, &pressure_plates_q, &color_control_q);
+        if laser.is_open != is_open {
+            laser.is_open = is_open;
+        }
     }
 }
 

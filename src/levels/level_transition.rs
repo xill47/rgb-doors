@@ -146,6 +146,7 @@ pub fn level_transition(
     match *transition_step {
         LevelTransitionStep::None => {
             if !level_transition_req.is_empty() {
+                info!("Level transition requested");
                 level_transition_req.clear();
                 *transition_step = LevelTransitionStep::LiftWillClose;
                 for mut forbid_movement in player_q.iter_mut() {

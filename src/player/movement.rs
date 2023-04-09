@@ -76,14 +76,6 @@ impl MovementState {
         }
     }
 
-    pub fn movement_direction(&self) -> Option<MovementDirection> {
-        match self {
-            MovementState::Idle => None,
-            MovementState::Moving(direction) => Some(*direction),
-            MovementState::MultiMoving { direction, .. } => Some(*direction),
-        }
-    }
-
     pub fn next_coords(&self, coords: &GridCoords) -> GridCoords {
         match self {
             MovementState::Idle => *coords,
@@ -156,28 +148,24 @@ pub fn player_action_to_movement(
 pub fn change_transform_based_on_grid(
     mut commands: Commands,
     player_query: Query<
-        (Entity, &Transform, &MovementState),
-        (Without<TweenTranslation>, Changed<MovementState>),
+        (Entity, &Transform, &GridCoords),
+        (Without<TweenTranslation>, Changed<GridCoords>, With<Player>),
     >,
     tilemap_size_q: Query<&TilemapTileSize>,
 ) {
-    let Some(tilemap_size) = tilemap_size_q.iter().next() else { return; };
-    for (entity, transform, movement_state) in player_query.iter() {
-        if let Some(player_movement) = movement_state.movement_direction() {
-            let movement_vec = player_movement.as_ivec2();
-            let target_pos = transform.translation
-                + Vec3::new(
-                    movement_vec.x as f32 * tilemap_size.x,
-                    movement_vec.y as f32 * tilemap_size.y,
-                    0.0,
-                );
-            commands.entity(entity).insert(TweenTranslation {
-                start: transform.translation,
-                end: target_pos,
-                duration: Duration::from_secs_f32(0.2),
-                elapsed: Duration::default(),
-            });
-        }
+    let Some(tile_size) = tilemap_size_q.iter().next() else { return; };
+    for (entity, transform, grid_coords) in player_query.iter() {
+        let target_pos = Vec3::new(
+            grid_coords.x as f32 * tile_size.x + tile_size.x / 2.0,
+            grid_coords.y as f32 * tile_size.y + tile_size.y / 2.0 + 8.,
+            transform.translation.z,
+        );
+        commands.entity(entity).insert(TweenTranslation {
+            start: transform.translation,
+            end: target_pos,
+            duration: Duration::from_secs_f32(0.2),
+            elapsed: Duration::default(),
+        });
     }
 }
 
@@ -201,6 +189,8 @@ pub fn tween_translations(
 pub fn next_movement_state(
     mut removed: RemovedComponents<TweenTranslation>,
     mut player_query: Query<(&mut MovementState, &mut GridCoords), Without<Dying>>,
+    tile_storage_q: Query<(&TileStorage, &Name)>,
+    tiles_q: Query<Option<&Wall>>,
 ) {
     for entity in removed.iter() {
         if let Ok((mut movement_state, mut grid_coords)) = player_query.get_mut(entity) {
@@ -209,10 +199,15 @@ pub fn next_movement_state(
                 MovementState::Moving(_) => MovementState::Idle,
                 MovementState::MultiMoving { direction, left } => {
                     if left > 1 {
-                        *grid_coords = GridCoords {
+                        let next_grid_coords = GridCoords {
                             x: grid_coords.x + direction.as_ivec2().x,
                             y: grid_coords.y + direction.as_ivec2().y,
                         };
+                        let is_wall = is_wall(next_grid_coords, &tile_storage_q, &tiles_q);
+                        info!("is {:?} a wall: {}", next_grid_coords, is_wall);
+                        if !is_wall {
+                            *grid_coords = next_grid_coords;
+                        }
                     }
                     match left {
                         2.. => MovementState::MultiMoving {
@@ -225,4 +220,22 @@ pub fn next_movement_state(
             };
         }
     }
+}
+
+fn is_wall(
+    next_grid_coords: GridCoords,
+    tile_storage_q: &Query<(&TileStorage, &Name)>,
+    tiles_q: &Query<Option<&Wall>>,
+) -> bool {
+    tile_storage_q
+        .iter()
+        .find(|(_, name)| name.as_str() == "IntGrid")
+        .and_then(|(tile_storage, _)| tile_storage.get(&next_grid_coords.into()))
+        .map(|tile| {
+            tiles_q
+                .get(tile)
+                .map(|tile| tile.is_some())
+                .unwrap_or(false)
+        })
+        .unwrap_or(false)
 }

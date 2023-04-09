@@ -5,8 +5,8 @@ use bevy_ecs_ldtk::*;
 #[allow(clippy::type_complexity)]
 pub fn camera_fit_inside_current_level(
     mut camera_query: Query<(&mut OrthographicProjection, &mut Transform), Without<Player>>,
-    game_screen_q: Query<&Node, (With<RootUI>, Changed<Node>)>,
-    level_query: Query<&Handle<LdtkLevel>, Without<OrthographicProjection>>,
+    game_screen_q: Query<&Node, With<RootUI>>,
+    level_query: Query<&Handle<LdtkLevel>, (Without<OrthographicProjection>, Changed<Handle<LdtkLevel>>)>,
     ldtk_levels: Res<Assets<LdtkLevel>>,
 ) {
     let Ok(game_screen) = game_screen_q.get_single() else { return; };

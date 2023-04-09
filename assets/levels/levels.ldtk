@@ -1085,7 +1085,10 @@
 							"px": [112,96],
 							"fieldInstances": [
 								{ "__identifier": "Message", "__value": null, "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [] },
-								{ "__identifier": "NextLevel", "__value": null, "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [] }
+								{ "__identifier": "NextLevel", "__value": "ea115fb0-c640-11ed-ad57-f75cc1888480", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["ea115fb0-c640-11ed-ad57-f75cc1888480"]
+								}] }
 							]
 						},
 						{
@@ -1261,14 +1264,12 @@
 						{ "px": [64,80], "src": [160,144], "f": 0, "t": 352, "d": [49] },
 						{ "px": [80,80], "src": [272,96], "f": 0, "t": 245, "d": [50] },
 						{ "px": [96,80], "src": [304,96], "f": 0, "t": 247, "d": [51] },
-						{ "px": [112,80], "src": [64,144], "f": 0, "t": 346, "d": [52] },
 						{ "px": [16,96], "src": [0,64], "f": 0, "t": 152, "d": [55] },
 						{ "px": [32,96], "src": [32,96], "f": 0, "t": 230, "d": [56] },
 						{ "px": [48,96], "src": [96,64], "f": 0, "t": 158, "d": [57] },
 						{ "px": [64,96], "src": [32,64], "f": 0, "t": 154, "d": [58] },
 						{ "px": [80,96], "src": [32,64], "f": 0, "t": 154, "d": [59] },
-						{ "px": [96,96], "src": [48,160], "f": 0, "t": 383, "d": [60] },
-						{ "px": [112,96], "src": [64,160], "f": 0, "t": 384, "d": [61] }
+						{ "px": [96,96], "src": [48,160], "f": 0, "t": 383, "d": [60] }
 					],
 					"entityInstances": []
 				}
@@ -1348,7 +1349,10 @@
 							"px": [192,48],
 							"fieldInstances": [
 								{ "__identifier": "Message", "__value": null, "__type": "String", "__tile": null, "defUid": 36, "realEditorValues": [] },
-								{ "__identifier": "NextLevel", "__value": null, "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [] }
+								{ "__identifier": "NextLevel", "__value": "c190d670-c640-11ed-b3e8-bdd10a92bb2d", "__type": "String", "__tile": null, "defUid": 40, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["c190d670-c640-11ed-b3e8-bdd10a92bb2d"]
+								}] }
 							]
 						},
 						{

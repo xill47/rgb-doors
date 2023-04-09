@@ -12,7 +12,7 @@ impl Plugin for LoadingPlugin {
             LoadingState::new(GameState::Loading).continue_to_state(GameState::Playing),
         )
         .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
-        // .add_collection_to_loading_state::<_, AudioAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, AudioAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, LevelAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, SpriteAssets>(GameState::Loading);
     }
@@ -30,6 +30,10 @@ pub struct AudioAssets {
     pub laser: Handle<AudioSource>,
     #[asset(path = "sounds/switch.ogg")]
     pub switch: Handle<AudioSource>,
+    #[asset(path = "sounds/bgm.ogg")]
+    pub bgm: Handle<AudioSource>,
+    #[asset(path = "sounds/step.ogg")]
+    pub step: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection, Resource)]
