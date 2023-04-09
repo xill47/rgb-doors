@@ -5,7 +5,7 @@ use bevy_ecs_ldtk::*;
 use bevy_ecs_tilemap::{prelude::TilemapTileSize, tiles::TileStorage};
 
 use crate::{
-    actions::{Actions, PlayerMovement},
+    actions::{Actions, MovementDirection},
     levels::tiles::{Door, Floor, Wall},
 };
 
@@ -18,7 +18,7 @@ use super::{
 pub enum MovementState {
     #[default]
     Idle,
-    Moving(PlayerMovement),
+    Moving(MovementDirection),
 }
 
 pub struct AnimationInfo {
@@ -34,16 +34,16 @@ impl MovementState {
                 ColorControl::Blue => "blue_idle",
             },
             MovementState::Moving(direction) => match direction {
-                PlayerMovement::Up => "walk_up",
-                PlayerMovement::Down => match color_control {
+                MovementDirection::Up => "walk_up",
+                MovementDirection::Down => match color_control {
                     ColorControl::Red => "red_walk_down",
                     ColorControl::Blue => "blue_walk_down",
                 },
-                PlayerMovement::Left => match color_control {
+                MovementDirection::Left => match color_control {
                     ColorControl::Red => "red_walk_right",
                     ColorControl::Blue => "blue_walk_right",
                 },
-                PlayerMovement::Right => match color_control {
+                MovementDirection::Right => match color_control {
                     ColorControl::Red => "red_walk_right",
                     ColorControl::Blue => "blue_walk_right",
                 },
@@ -52,10 +52,10 @@ impl MovementState {
         let flip_x = match self {
             MovementState::Idle => false,
             MovementState::Moving(direction) => match direction {
-                PlayerMovement::Up => false,
-                PlayerMovement::Down => false,
-                PlayerMovement::Left => true,
-                PlayerMovement::Right => false,
+                MovementDirection::Up => false,
+                MovementDirection::Down => false,
+                MovementDirection::Left => true,
+                MovementDirection::Right => false,
             },
         };
         AnimationInfo { tag_name, flip_x }
@@ -99,7 +99,7 @@ pub fn move_player_on_grid(
         .map(|(tile, _name)| tile) else { return;};
     for actions in actions.iter() {
         if let Some(player_movement) = &actions.player_movement {
-            let player_movement_vec = player_movement.movement();
+            let player_movement_vec = player_movement.as_ivec2();
             for (
                 mut grid_coords,
                 ignore_doors,
@@ -160,7 +160,7 @@ pub fn change_transform_based_on_grid(
     let Some(tilemap_size) = tilemap_size_q.iter().next() else { return; };
     for (entity, transform, movement_state) in player_query.iter() {
         if let MovementState::Moving(player_movement) = movement_state {
-            let movement_vec = player_movement.movement();
+            let movement_vec = player_movement.as_ivec2();
             let target_pos = transform.translation
                 + Vec3::new(
                     movement_vec.x as f32 * tilemap_size.x,

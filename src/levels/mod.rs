@@ -2,6 +2,7 @@ mod camera_fit;
 pub mod lasers;
 mod level_transition;
 pub mod panel;
+pub mod reset;
 pub mod tiles;
 
 use std::time::Duration;
@@ -14,9 +15,7 @@ use bevy_ecs_ldtk::{
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use crate::{
-    actions::Actions,
     loading::LevelAssets,
-    player::death::{play_death_animation, Death},
     ui::notifications::{CleanNotificationQueue, Notification},
     GameState,
 };
@@ -28,6 +27,7 @@ use self::{
         finish_system, level_transition, spawn_finish, FinishBundle, LevelTransition,
     },
     panel::{setup_panel, step_on_panel, PanelBundle},
+    reset::{reset_level, respawn_on_death, respawn_on_level_reset, ResetLevelEvent},
     tiles::WallBundle,
     tiles::{DoorBundle, FloorBundle},
 };
@@ -53,6 +53,7 @@ impl Plugin for LevelsPlugin {
             })
             .insert_resource(LevelSelection::Index(self.level_index))
             .add_event::<LevelTransition>()
+            .add_event::<ResetLevelEvent>()
             .register_ldtk_int_cell_for_layer::<WallBundle>("IntGrid", 1)
             .register_ldtk_int_cell_for_layer::<FloorBundle>("IntGrid", 2)
             .register_ldtk_int_cell_for_layer::<DoorBundle>("IntGrid", 3)
@@ -69,7 +70,8 @@ impl Plugin for LevelsPlugin {
                     spawn_lasers,
                     hide_lasers.after(spawn_lasers),
                     spawn_finish,
-                    respawn_on_death.after(play_death_animation),
+                    respawn_on_death,
+                    reset_level,
                     hide_int_grid,
                     step_on_panel,
                     finish_system,
@@ -120,67 +122,5 @@ fn hide_int_grid(mut ldtk_int_grid_q: Query<(&mut Visibility, &Name), Added<Laye
         if name.as_str() == "IntGrid" {
             *visibility = Visibility::Hidden;
         }
-    }
-}
-
-#[allow(clippy::too_many_arguments)]
-pub fn respawn_on_level_reset(
-    mut commands: Commands,
-    mut actions: EventReader<Actions>,
-    level_assets: Res<LevelAssets>,
-    ldtk_wrold_q: Query<Entity, With<Handle<LdtkAsset>>>,
-    mut notify: EventWriter<Notification>,
-    level_selection: Res<LevelSelection>,
-    ldtk_world: Res<Assets<LdtkAsset>>,
-    clean_notification: EventWriter<CleanNotificationQueue>,
-) {
-    if actions.iter().any(|action| action.level_reset.is_some()) {
-        for entity in ldtk_wrold_q.iter() {
-            commands.entity(entity).despawn_recursive();
-        }
-        notify.send(Notification {
-            text: "Resetting level...".into(),
-            duration: Duration::from_secs(1),
-        });
-        spawn_level(
-            commands,
-            level_assets,
-            level_selection,
-            ldtk_world,
-            notify,
-            clean_notification,
-        );
-    }
-}
-
-#[allow(clippy::too_many_arguments)]
-pub fn respawn_on_death(
-    mut commands: Commands,
-    mut death: EventReader<Death>,
-    level_assets: Res<LevelAssets>,
-    ldtk_wrold_q: Query<Entity, With<Handle<LdtkAsset>>>,
-    mut notify: EventWriter<Notification>,
-    level_selection: Res<LevelSelection>,
-    ldtk_world: Res<Assets<LdtkAsset>>,
-    clean_notification: EventWriter<CleanNotificationQueue>,
-) {
-    if !death.is_empty() {
-        death.clear();
-        info!("Respawning on death");
-        for entity in ldtk_wrold_q.iter() {
-            commands.entity(entity).despawn_recursive();
-        }
-        notify.send(Notification {
-            text: "You died :(".into(),
-            duration: Duration::from_secs(1),
-        });
-        spawn_level(
-            commands,
-            level_assets,
-            level_selection,
-            ldtk_world,
-            notify,
-            clean_notification,
-        );
     }
 }

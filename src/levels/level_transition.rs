@@ -3,7 +3,7 @@ use bevy_ecs_ldtk::{prelude::FieldValue, *};
 use bevy_mod_aseprite::{Aseprite, AsepriteAnimation};
 
 use crate::{
-    actions::PlayerMovement,
+    actions::MovementDirection,
     animation_finished,
     loading::SpriteAssets,
     player::{forbid_movement::ForbiddenMovement, Player},
@@ -97,7 +97,7 @@ pub fn finish_system(
                 if finish.next_level.is_some() {
                     level_transition.send(LevelTransition);
                 } else {
-                    forbid_movement.forbidden = PlayerMovement::all().into_iter().collect();
+                    forbid_movement.forbidden = MovementDirection::all().into_iter().collect();
                 }
             }
         }
@@ -140,7 +140,7 @@ pub fn level_transition(
                 level_transition_req.clear();
                 *transition_step = LevelTransitionStep::LiftWillClose;
                 for mut forbid_movement in player_q.iter_mut() {
-                    forbid_movement.forbidden = PlayerMovement::all().into_iter().collect();
+                    forbid_movement.forbidden = MovementDirection::all().into_iter().collect();
                 }
             }
         }

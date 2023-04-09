@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use bevy::prelude::*;
 
 use crate::{
-    actions::{Actions, PlayerMovement},
+    actions::{Actions, MovementDirection},
     player::forbid_movement::ForbiddenMovement,
 };
 
@@ -11,12 +11,12 @@ use super::bg_color_tween::BackgroundColorTween;
 
 #[derive(Component, PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Wasd {
-    player_movement: PlayerMovement,
+    player_movement: MovementDirection,
     forbidden: bool,
 }
 
-impl From<PlayerMovement> for Wasd {
-    fn from(player_movement: PlayerMovement) -> Self {
+impl From<MovementDirection> for Wasd {
+    fn from(player_movement: MovementDirection) -> Self {
         Self {
             player_movement,
             forbidden: false,
@@ -33,7 +33,7 @@ pub fn add_wasd(
     node_style: &Style,
     text_style: &TextStyle,
     str: &str,
-    movement: PlayerMovement,
+    movement: MovementDirection,
 ) {
     let wasd = Wasd::from(movement);
     let wasd_bg_color = WASD_DEFAULT_COLOR;

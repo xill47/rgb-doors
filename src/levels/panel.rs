@@ -5,7 +5,7 @@ use bevy_ecs_ldtk::{prelude::FieldValue, EntityInstance, GridCoords, LdtkEntity}
 use bevy_mod_aseprite::Aseprite;
 
 use crate::{
-    actions::PlayerMovement,
+    actions::MovementDirection,
     loading::SpriteAssets,
     player::{forbid_movement::ForbiddenMovement, Player},
     ui::notifications::Notification,
@@ -27,7 +27,7 @@ pub struct PanelBundle {
 #[derive(Component, Clone, Default, Debug)]
 pub struct Panel {
     pub opens_door: Option<Door>,
-    forbids_movement: Vec<PlayerMovement>,
+    forbids_movement: Vec<MovementDirection>,
     active: bool,
 }
 
@@ -81,13 +81,13 @@ pub fn setup_panel(
                     .iter()
                     .flatten()
                     .filter_map(|movement| match movement.as_str() {
-                        "W" => Some(PlayerMovement::Up),
-                        "S" => Some(PlayerMovement::Down),
-                        "A" => Some(PlayerMovement::Left),
-                        "D" => Some(PlayerMovement::Right),
+                        "W" => Some(MovementDirection::Up),
+                        "S" => Some(MovementDirection::Down),
+                        "A" => Some(MovementDirection::Left),
+                        "D" => Some(MovementDirection::Right),
                         _ => None,
                     })
-                    .collect::<Vec<PlayerMovement>>()
+                    .collect::<Vec<MovementDirection>>()
             })
         {
             panel.forbids_movement = forbidden_movement;

@@ -7,7 +7,7 @@ pub mod wasd;
 
 use bevy::prelude::*;
 
-use crate::{actions::PlayerMovement, loading::FontAssets, GameState};
+use crate::{actions::MovementDirection, loading::FontAssets, GameState};
 
 use self::{
     bg_color_tween::*,
@@ -135,7 +135,7 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                 &wasd_node_style,
                                 &text_style,
                                 "W",
-                                PlayerMovement::Up,
+                                MovementDirection::Up,
                             );
                             parent
                                 .spawn(NodeBundle {
@@ -158,21 +158,21 @@ pub fn spawn_game_ui(mut commands: Commands, font_assets: Res<FontAssets>) {
                                         &wasd_node_style,
                                         &text_style,
                                         "A",
-                                        PlayerMovement::Left,
+                                        MovementDirection::Left,
                                     );
                                     add_wasd(
                                         parent,
                                         &wasd_node_style,
                                         &text_style,
                                         "S",
-                                        PlayerMovement::Down,
+                                        MovementDirection::Down,
                                     );
                                     add_wasd(
                                         parent,
                                         &wasd_node_style,
                                         &text_style,
                                         "D",
-                                        PlayerMovement::Right,
+                                        MovementDirection::Right,
                                     );
                                 });
                         });

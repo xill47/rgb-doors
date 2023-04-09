@@ -17,36 +17,36 @@ impl Plugin for ActionsPlugin {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub enum PlayerMovement {
+pub enum MovementDirection {
     Up,
     Down,
     Left,
     Right,
 }
 
-impl PlayerMovement {
-    pub fn movement(&self) -> IVec2 {
+impl MovementDirection {
+    pub fn as_ivec2(&self) -> IVec2 {
         match self {
-            PlayerMovement::Up => IVec2::new(0, 1),
-            PlayerMovement::Down => IVec2::new(0, -1),
-            PlayerMovement::Left => IVec2::new(-1, 0),
-            PlayerMovement::Right => IVec2::new(1, 0),
+            MovementDirection::Up => IVec2::new(0, 1),
+            MovementDirection::Down => IVec2::new(0, -1),
+            MovementDirection::Left => IVec2::new(-1, 0),
+            MovementDirection::Right => IVec2::new(1, 0),
         }
     }
 
-    pub fn all() -> [PlayerMovement; 4] {
+    pub fn all() -> [MovementDirection; 4] {
         [
-            PlayerMovement::Up,
-            PlayerMovement::Down,
-            PlayerMovement::Left,
-            PlayerMovement::Right,
+            MovementDirection::Up,
+            MovementDirection::Down,
+            MovementDirection::Left,
+            MovementDirection::Right,
         ]
     }
 }
 
 #[derive(Default)]
 pub struct Actions {
-    pub player_movement: Option<PlayerMovement>,
+    pub player_movement: Option<MovementDirection>,
     pub color_switch: Option<()>,
     pub level_reset: Option<()>,
 }
@@ -68,10 +68,10 @@ pub fn set_movement_actions(
                 direction.check_input(&|input, code| input.just_pressed(code), &keyboard_input)
             })
             .and_then(|direction| match direction {
-                GameControl::Up => Some(PlayerMovement::Up),
-                GameControl::Down => Some(PlayerMovement::Down),
-                GameControl::Left => Some(PlayerMovement::Left),
-                GameControl::Right => Some(PlayerMovement::Right),
+                GameControl::Up => Some(MovementDirection::Up),
+                GameControl::Down => Some(MovementDirection::Down),
+                GameControl::Left => Some(MovementDirection::Left),
+                GameControl::Right => Some(MovementDirection::Right),
                 _ => None,
             })
     };
