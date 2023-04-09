@@ -8,7 +8,7 @@ pub struct InternalAudioPlugin;
 impl Plugin for InternalAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(start_bgm.in_schedule(OnEnter(GameState::Playing)))
-            .add_systems((step_audio,laser_audio).in_set(OnUpdate(GameState::Playing)));
+            .add_systems((step_audio, laser_audio).in_set(OnUpdate(GameState::Playing)));
     }
 }
 
@@ -43,7 +43,12 @@ fn laser_audio(
                 .distance(player_transform.translation);
             info!("Playing laser sound at distance {}", distance);
             if distance < 100.0 {
-                audio.play_spatial(audio_assets.laser.clone_weak(), *player_transform, 1.0, laser_transform.translation);
+                audio.play_spatial(
+                    audio_assets.laser.clone_weak(),
+                    *player_transform,
+                    1.0,
+                    laser_transform.translation,
+                );
             }
         }
     }

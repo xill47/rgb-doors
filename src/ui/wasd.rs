@@ -27,9 +27,10 @@ impl From<MovementDirection> for Wasd {
     }
 }
 
-const WASD_DEFAULT_COLOR: Color = Color::rgb(0.2, 0.2, 0.2);
-const WASD_PRESSED_COLOR: Color = Color::rgb(0.5, 0.5, 0.5);
+const WASD_DEFAULT_COLOR: Color = Color::rgb(0.6, 0.6, 0.6);
+const WASD_PRESSED_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 const WASD_FORBID_COLOR: Color = Color::rgb(0.6, 0.2, 0.2);
+const WASD_MULTIMOVE_COLOR: Color = Color::rgb(0.4, 0.4, 0.2);
 
 pub fn add_wasd(
     parent: &mut ChildBuilder,
@@ -46,11 +47,9 @@ pub fn add_wasd(
             background_color: wasd_bg_color.into(),
             ..default()
         })
-        .insert(wasd.clone())
+        .insert(wasd)
         .with_children(|parent| {
-            parent
-                .spawn(TextBundle::from_section(str, text_style.clone()))
-                .insert(wasd.clone());
+            parent.spawn(TextBundle::from_section(str, text_style.clone()));
         });
 }
 
@@ -89,6 +88,19 @@ pub fn set_wasd_forbidden(
                 None => {
                     wasd.forbidden = false;
                     background_color.0 = WASD_DEFAULT_COLOR;
+                    for child in children.iter() {
+                        if let Ok(mut text) = text_q.get_mut(*child) {
+                            text.sections[0] = TextSection {
+                                value: match wasd.player_movement {
+                                    MovementDirection::Up => "W".to_owned(),
+                                    MovementDirection::Down => "S".to_owned(),
+                                    MovementDirection::Left => "A".to_owned(),
+                                    MovementDirection::Right => "D".to_owned(),
+                                },
+                                style: text.sections[0].style.clone(),
+                            };
+                        }
+                    }
                 }
                 DisabledMovement => {
                     wasd.forbidden = true;
@@ -99,9 +111,29 @@ pub fn set_wasd_forbidden(
                         duration: 0.7,
                         elapsed: 0.0,
                     });
+                    for child in children.iter() {
+                        if let Ok(mut text) = text_q.get_mut(*child) {
+                            text.sections[0] = TextSection {
+                                value: match wasd.player_movement {
+                                    MovementDirection::Up => "W".to_owned(),
+                                    MovementDirection::Down => "S".to_owned(),
+                                    MovementDirection::Left => "A".to_owned(),
+                                    MovementDirection::Right => "D".to_owned(),
+                                },
+                                style: text.sections[0].style.clone(),
+                            };
+                        }
+                    }
                 }
                 MultiMove(count) => {
                     wasd.forbidden = false;
+                    commands.entity(entity).insert(BackgroundColorTween {
+                        start_color: background_color.0,
+                        end_color: WASD_MULTIMOVE_COLOR,
+                        after_color: WASD_MULTIMOVE_COLOR,
+                        duration: 0.7,
+                        elapsed: 0.0,
+                    });
                     for child in children.iter() {
                         if let Ok(mut text) = text_q.get_mut(*child) {
                             text.sections[0] = TextSection {
