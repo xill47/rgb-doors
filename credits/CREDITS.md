@@ -1,4 +1,6 @@
 # Credits
+Code, a couple of levels: @xill47
+All other assets: @NedoKontent
 
 ## Assets
 

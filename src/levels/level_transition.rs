@@ -91,7 +91,7 @@ fn finish_sprite(
 pub fn finish_system(
     mut player_q: Query<
         (&GridCoords, &mut MovementSideEffects),
-        (With<Player>, Changed<GridCoords>),
+        (With<Player>, Changed<GridCoords>, Without<OnFinish>),
     >,
     mut finish_query: Query<(&Finish, &GridCoords)>,
     mut notifications: EventWriter<Notification>,
@@ -127,6 +127,9 @@ pub enum LevelTransitionStep {
     ScreenOpens,
 }
 
+#[derive(Component)]
+pub struct OnFinish;
+
 #[allow(clippy::type_complexity)]
 #[allow(clippy::too_many_arguments)]
 pub fn level_transition(
@@ -155,10 +158,13 @@ pub fn level_transition(
                             .0
                             .set(direction, SideEffect::DisabledMovement);
                     }
+                    commmands.entity(forbid_movement.1).insert(OnFinish);
                 }
+                
             }
         }
         LevelTransitionStep::LiftWillClose => {
+            info!("Lift will close");
             let mut successful = false;
             for (mut lift_anim, _, _) in lift_q.iter_mut() {
                 let lift_ase_handle = sprites.lift.clone_weak();
@@ -184,7 +190,8 @@ pub fn level_transition(
             }
         }
         LevelTransitionStep::ScreenWillClose => {
-            let duration = 1.5;
+            info!("Screen will close");
+            let duration = 1.6;
             *timer = Timer::from_seconds(duration, TimerMode::Once);
             for (entity, &background_color) in screen_q.iter_mut() {
                 commmands.entity(entity).insert(BackgroundColorTween {
@@ -202,7 +209,7 @@ pub fn level_transition(
                 lift_anim.0.play();
                 commmands.entity(lift_anim.1).insert(TweenTranslation {
                     start: lift_anim.2.translation,
-                    end: lift_anim.2.translation + Vec3::new(0., -30., 0.),
+                    end: lift_anim.2.translation + Vec3::new(0., -33., 0.),
                     duration: Duration::from_secs_f32(duration),
                     ..default()
                 });
@@ -218,11 +225,12 @@ pub fn level_transition(
             *transition_step = LevelTransitionStep::ScreenCloses;
         }
         LevelTransitionStep::ScreenCloses => {
-            if timer.tick(time.delta()).just_finished() {
+            if timer.tick(time.delta()).finished() || timer.paused() {
                 *transition_step = LevelTransitionStep::ScreenWillOpen;
             }
         }
         LevelTransitionStep::ScreenWillOpen => {
+            info!("Screen will open");
             let duration = 3.;
             *timer = Timer::from_seconds(duration, TimerMode::Once);
             for finish in finish_q.iter() {
@@ -244,7 +252,7 @@ pub fn level_transition(
             *transition_step = LevelTransitionStep::ScreenOpens;
         }
         LevelTransitionStep::ScreenOpens => {
-            if timer.tick(time.delta()).just_finished() {
+            if timer.tick(time.delta()).finished() || timer.paused() {
                 *transition_step = LevelTransitionStep::None;
             }
         }

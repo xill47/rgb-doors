@@ -1,6 +1,6 @@
 [package]
 name = "rgb-doors"
-version = "0.1.0"
+version = "0.1.4"
 publish = false
 authors = ["Ilia Kuznetcov", "Georgi Glazkov"]
 edition = "2021"
